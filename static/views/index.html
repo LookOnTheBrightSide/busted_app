@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<!-- latest minified version of mapzen.js -->
+	
+	<script src="https://mapzen.com/js/mapzen.min.js"></script>
+	<link rel="stylesheet" href="https://mapzen.com/js/mapzen.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/custom.css">
+</head>
+<body>
+	<header>
+		<div id="menu">
+			<a href="#" id="logo"></a>
+			<a href="#">Route Graphs</a>
+		</div>
+	</header>
+	<main>
+		<div id="right">
+			<h2 id="target"></h2>
+			<form>
+				<h1>Enter Starting and Ending Bus Stop ids</h1>
+				<input placeholder="Starting id" type="text" required>
+				<input placeholder="Ending id" type="text" required>
+				<button>Submit</button>
+			</form> 
+		</div>
+
+		<div id="map"></div>
+	</main>
+	<script type="text/javascript">
+		var target = document.getElementById('target');
+		target.innerHTML = "";
+		$.get("http://localhost:8080/apiv1/stops/3434", function(data){
+			data = JSON.parse(data);
+			target.innerHTML += (data['name']);
+			console.log(data)
+		});
+
+		  // Add a Mapzen API key
+		L.Mapzen.apiKey = 'mapzen-YMERske';
+		// Add a map to the 'map' div
+		var map = L.Mapzen.map('map');
+		// Set the center of the map to be the San Francisco Bay Area at zoom level 12
+
+		map.setView([53.271782, -6.248050,], 15);
+		var routingControl = L.Mapzen.routing.control({
+		/* pass the points to route here */
+	  //   waypoints: [
+	  //   	L.latLng(53.271782,-6.248050),
+			// // L.latLng(53.272057,-6.255446),
+			// // L.latLng(53.283310,-6.279359),
+			// // L.latLng(53.292206,-6.282335),
+			// // L.latLng(53.295097,-6.282002),
+			// // L.latLng(53.296242,-6.283947),
+			// // L.latLng(53.298477,-6.284559),
+			// // L.latLng(53.300755,-6.283950),
+			// // L.latLng(53.306164,-6.283511),
+			// // L.latLng(53.316353,-6.280933),
+			// // L.latLng(53.319183,-6.278878),
+			// // L.latLng(53.321293,-6.279228),
+			// // L.latLng(53.322617,-6.279243),
+			// // L.latLng(53.327179,-6.277498),
+			// // L.latLng(53.328735,-6.276166),
+			// // L.latLng(53.332184,-6.273881),
+			// // L.latLng(53.332500,-6.267471),
+			// // L.latLng(53.334442,-6.265275),
+			// // L.latLng(53.340080,-6.265760),
+			// // L.latLng(53.342560,-6.264511),
+			// // L.latLng(53.344357,-6.261344),
+			// // L.latLng(53.345562,-6.259108),
+			// // L.latLng(53.351345,-6.261118),
+			// // L.latLng(53.353436,-6.265345),
+			// // L.latLng(53.356743,-6.264577),
+			// // L.latLng(53.362984,-6.258309),
+			// // L.latLng(53.370033,-6.254196),
+			// // L.latLng(53.373863,-6.251790),
+			// // L.latLng(53.376286,-6.249843),
+			// // L.latLng(53.381821,-6.242445),
+			// // L.latLng(53.385593,-6.233559),
+			// // L.latLng(53.391926,-6.246200),
+			// // L.latLng(53.404087,-6.240226),
+			// L.latLng(53.428001,-6.241967)
+	  //   ],
+		router: L.Mapzen.routing.router({costing: 'auto'}),
+			}).addTo(map);
+	</script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 # Research Practicum - Team Busted 
 
+[![Build Status](https://travis-ci.com/LookOnTheBrightSide/busted_app.svg?token=67ZRMCE3p6XpMKUH71z1&branch=master)](https://travis-ci.com/LookOnTheBrightSide/busted_app)
+
 The live site is available here: [Acubus](http://acubus.info/)
 
 This is the documentation for Team Busted. A basic guide on how to set up your development environment will be detailed below. We use two GitHub repositories, one for misclelenous code that's written for the project (i.e Formatting data, cleaning up data etc). Our second repository is of the main application itself. This is the actual codebase for the deployed application. 
