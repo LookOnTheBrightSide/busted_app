@@ -33,7 +33,7 @@
 	<script type="text/javascript">
 		var target = document.getElementById('target');
 		target.innerHTML = "";
-		$.get("http://localhost:8080/apiv1/stops/3434", function(data){
+		$.get("/apiv1/stops/3434", function(data){
 			data = JSON.parse(data);
 			target.innerHTML += (data['name']);
 			console.log(data)

@@ -5,6 +5,7 @@ import bottle
 import pickle
 import redis
 import json
+from xgboost import XGBClassifier
 from sklearn import svm
 from sklearn import datasets
 from bottle import route, run, request, abort, static_file, get
@@ -13,7 +14,7 @@ from bson.json_util import dumps
 
 
 red = redis.StrictRedis(host='localhost', port=6379, db=0)
-connection = MongoClient(host='localhost', port=27017)
+connection = MongoClient('mongodb://127.0.0.1:27017/')
 db = connection.stops
 # =========================
 
@@ -32,7 +33,8 @@ with (open("random_forest_test_pickle.obj", "rb")) as openfile:
         except EOFError:
             break
 print(objects)
-
+pickle_in = open('bigger_model.sav', 'rb')
+prediction_model = pickle.load(pickle_in)
 
 # station_one = y[0]
 # =========================
@@ -70,6 +72,11 @@ def server_one():
     res = objects[0].predict([1, 0.105961, 0.000000, 0.285714])
     return "{} prediction".format(res)
 
+@route('/apiv1/route/:start_stop/:end_stop')
+def get_travel_time(start_stop, end_stop):
+    val_start = prediction_model.predict([int(start_stop), 200])
+    val_end = prediction_model.predict([int(end_stop), -300])
+    return "Accubus says it will take {}".format(val_end - val_start)
 
 # Gets to the version 1 api for stops
 @route('/apiv1/stops/', method='GET')
@@ -86,5 +93,5 @@ def get_document(stop_id):
     if not entity:
         abort(404, 'No stop with id {}'.format(stop_id))
     return dumps(entity)
-
-run(host='localhost', reloader=True, port=8080)
+app = bottle.default_app()
+# run(host='localhost', reloader=True, port=8080)
