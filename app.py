@@ -14,8 +14,9 @@ from bson.json_util import dumps
 
 
 red = redis.StrictRedis(host='localhost', port=6379, db=0)
-connection = MongoClient('mongodb://127.0.0.1:27017/')
+connection = MongoClient('mongodb://127.0.0.1:27017/', connect=False)
 db = connection.stops
+db_routes = connection.routes
 # =========================
 
 # clf = svm.SVC()
@@ -32,9 +33,9 @@ with (open("random_forest_test_pickle.obj", "rb")) as openfile:
             objects.append(pickle.load(openfile))
         except EOFError:
             break
-print(objects)
-pickle_in = open('bigger_model.sav', 'rb')
-prediction_model = pickle.load(pickle_in)
+# print(objects)
+#pickle_in = open('random_forest.sav', 'rb')
+#prediction_model = pickle.load(pickle_in)
 
 # station_one = y[0]
 # =========================
@@ -72,14 +73,32 @@ def server_one():
     res = objects[0].predict([1, 0.105961, 0.000000, 0.285714])
     return "{} prediction".format(res)
 
-@route('/apiv1/route/:start_stop/:end_stop')
-def get_travel_time(start_stop, end_stop):
-    val_start = prediction_model.predict([int(start_stop), 200])
-    val_end = prediction_model.predict([int(end_stop), -300])
-    return "Accubus says it will take {}".format(val_end - val_start)
+# Get all routes 
+@route('/apiv1/route/', method='GET')
+def get_all_routes():
+    entity = db_routes.docs.find()
+    return dumps(entity)
+
+# Get one route
+@route('/apiv1/route/:route_num', method='GET')
+def get_single_route(route_num):
+    entity = db_routes.docs.find({"route":str(route_num)})
+    if not entity:
+        abort(404, "No route {} found".format(route_num))
+    return dumps(entity)
+
+@route('/apiv1/route/:route_num/:start_stop/:end_stop/:departure_time', method='GET')
+def get_travel_time(route_num, start_stop, end_stop, departure_time):
+    entity = db_routes.docs.find({"route":str(route_num)})
+    pickle_in = open('LR_model.sav', 'rb')
+    prediction_model = pickle.load(pickle_in)
+    val_start = prediction_model.predict([int(start_stop), -54, int(departure_time)])
+    val_end = prediction_model.predict([int(end_stop), -183, int(departure_time)])
+    return "Accubus says it will take {} mins".format((val_end - val_start)/60)
+        
 
 # Gets to the version 1 api for stops
-@route('/apiv1/stops/', method='GET')
+@route('/apiv1/stops', method='GET')
 def get_document():
     entity = db.docs.find()
     if not entity:
@@ -89,7 +108,7 @@ def get_document():
 # Gets to the version 1 api for stop id
 @route('/apiv1/stops/:stop_id', method='GET')
 def get_document(stop_id):
-    entity = db.docs.find_one({"id": str(stop_id)})
+    entity = db.docs.find_one({"stop_id": str(stop_id)})
     if not entity:
         abort(404, 'No stop with id {}'.format(stop_id))
     return dumps(entity)
