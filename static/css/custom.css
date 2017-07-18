@@ -1,47 +1,54 @@
-*{
-	background-color: whitesmoke;
-	padding: 0;
-	margin: 0;
-	font-size: 14px;
+html {
+	font-size: 8px;
+}
+
+* {
+	font-family: 'Helvetica', 'Open Sans';
 }
 
 #right,
-#menu,
-#map{
+#menu {
 	padding: 0.2rem;
-	-webkit-box-shadow: 0px 0px 8px 2px rgba(166,166,166,0.85);
-	-moz-box-shadow: 0px 0px 8px 2px rgba(166,166,166,0.85);
-	box-shadow: 0px 0px 8px 2px rgba(166,166,166,0.85);
-	background-color: white;
-	border: 1px solid #1cc1c1cc;
+	-webkit-box-shadow: 0px 0px 8px 2px rgba(166, 166, 166, 0.85);
+	-moz-box-shadow: 0px 0px 8px 2px rgba(166, 166, 166, 0.85);
+	box-shadow: 0px 0px 8px 2px rgba(166, 166, 166, 0.85);
+	/* background-color: white; */
+	border: 1px solid #1c1c1c;
 }
-#right{
+
+#right {
 	min-width: 26%;
 }
-#target{
+
+#target {
 	text-align: center;
 }
-#menu{
+
+#menu {
 	justify-content: space-between;
 	background-color: #303030;
 	color: white;
 }
-header a{
+
+header a {
 	background-color: #303030;
 	color: white;
 	text-decoration: none;
 	font-size: 1.2rem;
 }
-main{
+
+main {
 	justify-content: space-around;
 }
+
 #menu,
-main{
+main {
 	display: flex;
 	margin-bottom: 0.5rem;
 	padding: 0 0.5rem;
 }
-#logo{
+
+#logo {
 	width: 102px;
 	height: 24px;
 	background-image: url('../img/logo.svg');
@@ -49,8 +56,100 @@ main{
 	background-size: cover;
 }
 
-#map{
+#map {
 	min-width: 70%;
 	min-height: 93vh;
-	border: 1px solid gray;
+}
+
+aside {
+	width: 100%;
+	padding: 0 1rem;
+}
+
+input {
+	text-overflow: ellipsis;
+}
+
+.start_stop,
+input,
+.submission {
+	margin: 0.4rem 0;
+}
+
+#advanced {
+	display: none;
+}
+
+.input_inline,
+#travel_time,
+#travel_date,
+#start_position,
+#end_position,
+#start_results {
+	width: 100%;
+}
+
+.listItem,
+/* #bus_options, */
+#bus_to_destination {
+	padding: 0.1rem;
+	background-color: white;
+	border: 1px solid #9b4dca;
+	border-radius: 2px;
+	margin: 0.2rem 0;
+	display: inline-block;
+	width: 100%;
+	color: #303030;
+}
+
+.bus_to_take {
+	background-color: #9b4dca;
+	padding: 0.2rem 0.4rem;
+	color: white;
+	margin: 0.2rem;
+	border-radius: 4px;
+}
+
+div:empty {
+	display: none !important
+}
+
+#start_results,
+#end_results {
+	max-height: 40vh;
+	width: 355px;
+	overflow: scroll;
+	padding: 0.1rem;
+	display: block;
+	position: absolute;
+	z-index: 99;
+	background-color: white;
+	border-bottom: 2px solid #303030;
+}
+
+.listItem:hover,
+#chosen_bus:hover {
+	cursor: pointer;
+	background-color: teal;
+	color: white;
+}
+
+#chosen_bus{
+	display: block;
+	width: 100%;
+}
+
+h4 span{
+	padding: 0.2rem 0.4rem;
+	color:white;
+	background-color: teal;
+	border-radius: 2px;
+	font-weight: 500;
+	letter-spacing: 0.2rem;
+}
+
+/* Messenger Overrides  */
+
+.messenger-message-inner {
+	font-family: 'Helvetica'
 }
