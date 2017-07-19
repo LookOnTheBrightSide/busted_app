@@ -1,22 +1,4 @@
 $(document).ready(function () {
-  // user longitude and latitude
-  var user_lng,
-    user_lat;
-  // callback with wath to do with returned object
-  var location = function (position) {
-    user_lng = position.coords.longitude;
-    user_lat = position.coords.latitude;
-  }
-  $('#suggest_nearby_stops').click(function () {
-    navigator.geolocation.getCurrentPosition(location);
-    if (user_lat && user_lng) {
-      $.getJSON(`apiv1/stops/${user_lng}/${user_lat}`, function (data) {
-        $.each(data, function (key, val) {
-          $('#start_results').append(`<span class="listItem">${val.stop_id} : ${val.address} ${val.stop_name}</span>`);
-        })
-      })
-    }
-  });
 
   // ===============================
   // Initial setup for notifications
@@ -28,6 +10,42 @@ $(document).ready(function () {
       hideAfter: 3
     }
   }
+
+  // =====================================================
+
+
+  $('#suggest_nearby_stops').click(function () {
+    Messenger().run({
+      action: navigator.geolocation.getCurrentPosition(success, error),
+      successMessage: 'Successfully located your position!',
+      errorMessage: 'an error happened ...',
+      progressMessage: 'Locating your position xxx ...'
+    });
+
+
+    // =====================================================
+    // ==== Following functions are the callbacks ==========
+    // =====================================================
+    function error() {
+      return "Error: check your location permissions"
+    }
+
+    function success(position) {
+      var user_lat = position.coords.latitude;
+      var user_lng = position.coords.longitude;
+      if (user_lat && user_lng) {
+        $.getJSON(`apiv1/stops/${user_lng}/${user_lat}`, function (data) {
+          if ($('#start_results')) {
+            $('#start_results').html('');
+          }
+          $.each(data, function (key, val) {
+            $('#start_results').append(`<span class="listItem">${val.stop_id} : ${val.address} ${val.stop_name}</span>`);
+          })
+        })
+      }
+    }
+  });
+
   // =====================================================================
   // listen for keyup event i.e typing
   // get the results of the keypress and query the database with that input
@@ -144,7 +162,7 @@ $(document).ready(function () {
         if (data) {
           $('#bus_possibility').append(`<h4>Your bus options</h4>`)
           $.each(data, function (index, val) {
-            $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button-small">${index} : ${Math.round(val)} minutes</span>`);
+            $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button">${index} : ${Math.round(val)} minutes</span>`);
           })
         } else {
           if ($('#bus_options')) {

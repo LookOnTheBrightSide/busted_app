@@ -151,8 +151,15 @@ h4 span{
 	letter-spacing: 0.2rem;
 }
 
+.bus_to_take{
+	font-size: 1.4rem;
+	font-weight: 500;
+}
 /* Messenger Overrides  */
 
 .messenger-message-inner {
 	font-family: 'Helvetica'
+}
+ul.messenger-theme-flat .messenger-message.alert-info .messenger-message-inner:before {
+    background: #4B4DC2;
 }
