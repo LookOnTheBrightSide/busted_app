@@ -206,6 +206,6 @@ def get_document(stop_id):
 # =============== Run the App ==========================================
 # if __name__ == "__name__":
 #     run(host='localhost', reloader=True, port=8080)
-# run(host='localhost', reloader=True, port=8080)
+run(host='localhost', reloader=True, port=8088)
 # app = bottle.default_app()
-app = bottle.default_app()
+# app = bottle.default_app()
