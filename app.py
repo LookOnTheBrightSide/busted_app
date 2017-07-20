@@ -203,9 +203,9 @@ def get_document(stop_id):
     return dumps(entity)
 
 
-# =============== Run the App ==========================================
+## =============== Run the App ==========================================
 # if __name__ == "__name__":
 #     run(host='localhost', reloader=True, port=8080)
-run(host='localhost', reloader=True, port=8088)
+# run(host='localhost', reloader=True, port=8080)
 # app = bottle.default_app()
-# app = bottle.default_app()
+app = bottle.default_app()
