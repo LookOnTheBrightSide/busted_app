@@ -162,7 +162,7 @@ $(document).ready(function () {
         if (data) {
           $('#bus_possibility').append(`<h4>Your bus options</h4>`)
           $.each(data, function (index, val) {
-            $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button">${index} : ${Math.round(val)} minutes</span>`);
+            $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button-small">${index} : ${Math.round(val)} minutes</span>`);
           })
         } else {
           if ($('#bus_options')) {
