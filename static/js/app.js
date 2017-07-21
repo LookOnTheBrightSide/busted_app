@@ -38,9 +38,27 @@ $(document).ready(function () {
           if ($('#start_results')) {
             $('#start_results').html('');
           }
+          var center = new google.maps.LatLng(data[0].location.coordinates[1],data[0].location.coordinates[0]);
           $.each(data, function (key, val) {
+          //  nearest 5 stops found, add markers, drop pins on map, populate dropdown
+            var marker = new google.maps.Marker({
+              position: new google.maps.LatLng(val.location.coordinates[1],val.location.coordinates[0]),
+              map: map,
+              animation: google.maps.Animation.DROP,
+              icon: "http://labs.google.com/ridefinder/images/mm_20_green.png",
+              title: val.address
+            })
             $('#start_results').append(`<span class="listItem">${val.stop_id} : ${val.address} ${val.stop_name}</span>`);
           })
+          var user_position = new google.maps.Marker({
+            position: new google.maps.LatLng(user_lat, user_lng),
+            map: map,
+            optimized: false,
+            icon: "https://s22.postimg.org/a7z7pnm01/835_2.gif",
+            title: "You are here"
+          });
+          map.setCenter(center)
+          map.setZoom(16);
         })
       }
     }
@@ -233,7 +251,7 @@ function initMap() {
   var map_options = {
     center: dublin,
     zoom: 12,
-    mapTypeId: 'roadmap'
+    mapTypeId: google.maps.MapTypeId.ROADMAP
   };
   var transitLayer = new google.maps.TransitLayer();
 
