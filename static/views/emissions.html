@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<!-- latest minified version of mapzen.js -->
+	
+	<script src="https://mapzen.com/js/mapzen.min.js"></script>
+	<link rel="stylesheet" href="https://mapzen.com/js/mapzen.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/custom.css">
+</head>
+<body>
+	<header>
+		<div id="menu">
+			<a href="#" id="logo"></a>
+			<a href="#">Route Graphs</a>
+			<a href="/logout">Logout</a>
+		</div>
+	</header>
+	<main>
+		<div id="right">
+		</div>
+		<div id="target">
+		</div>
+		<div id="target_pic">
+		</div>
+
+	</main>
+		<script type="text/javascript">
+		var target = document.getElementById('target');
+		var target_pic = document.getElementById('target_pic');
+		target.innerHTML = "";
+		target_pic.innerHTML = "";
+		$.get("http://localhost:8080/user_data", function(data){
+			var obj = JSON.parse(data);
+			target.innerHTML += ("This is your facebook name: " + obj.name + ". " + "This is your facebook id: " + obj.id + ".");
+			target_pic.innerHTML += ("<img src='http://graph.facebook.com/" + obj.id + "/picture?type=square'>");
+		});
+	</script>
+</body>
+</html>
