@@ -71,7 +71,6 @@ facebook_user_profile = 'https://graph.facebook.com/me?'
 # =============================================================
 
 # red = redis.StrictRedis(host='localhost', port=6379, db=0)
-
 connection = MongoClient(host='localhost', port=27017)
 db = connection.accubusDB
 
@@ -83,21 +82,17 @@ db = connection.accubusDB
 def css(filepath):
     return static_file(filepath, root="static/css")
 
-
 @bottle.get(r"/static/font/<filepath:re:.*\.(eot|otf|svg|ttf|woff|woff2?)>")
 def font(filepath):
     return static_file(filepath, root="static/font")
-
 
 @bottle.get(r"/static/img/<filepath:re:.*\.(jpg|png|gif|ico|svg)>")
 def img(filepath):
     return static_file(filepath, root="static/img")
 
-
 @bottle.get(r"/static/js/<filepath:re:.*\.js>")
 def js(filepath):
     return static_file(filepath, root="static/js")
-
 
 @bottle.get(r"/static/views/<filepath:re:.*\.html>")
 def views(filepath):
@@ -115,7 +110,6 @@ def server_static():
 
 # ================== All stops json ===============================
 
-
 @bottle.route('/apiv1/stops/', method='GET')
 def get_document():
     entity = db.stops.find()
@@ -124,7 +118,6 @@ def get_document():
     return dumps(entity)
 
 # ================== Search stops on keyup =========================
-
 
 @bottle.route('/apiv1/stop/:query', method='GET')
 def get_stop(query):
@@ -139,14 +132,12 @@ def get_stop(query):
 
 # ================== All routes json ===============================
 
-
 @bottle.route('/apiv1/route/', method='GET')
 def get_all_routes():
     entity = db.routes.find({})
     return dumps(entity)
 
 # ================== Return posible buses that serve start stop ====
-
 
 @bottle.route('/apiv1/route/start/:start_stop', method='GET')
 def get_stops_from_origin(start_stop):
@@ -158,7 +149,6 @@ def get_stops_from_origin(start_stop):
     return dumps(no_repeats)
 
 # ====== Return posible buses that serve end stop ===================
-
 
 @bottle.route('/apiv1/route/end/:end_stop', method='GET')
 def get_stops_from_destination(end_stop):
@@ -188,7 +178,6 @@ def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, predic
 
 # ====================================================================
 
-
 @bottle.route('/apiv1/route/start/:start_stop/end/:end_stop', method='GET')
 def get_stops_from_origin(start_stop, end_stop):
     entity = db.routes.find({"$and": [{"route_stops.stop_id": str(start_stop)},
@@ -214,7 +203,6 @@ def get_stops_from_origin(start_stop, end_stop):
 
 # ============== Find the 5 nearest stops =============================
 
-
 @bottle.route('/apiv1/stops/:lng/:lat')
 def get_nearby_stops(lat, lng):
     stops = db.stops.find(
@@ -225,7 +213,6 @@ def get_nearby_stops(lat, lng):
     return dumps(stops)
 
 # ============== Use Google Api so suggest connecting buses ===========
-
 
 @bottle.route('/src/:src/dst/:dst', method='GET')
 def get_document(src, dst):
@@ -249,6 +236,7 @@ def get_document(stop_id):
     if not entity:
         abort(404, 'No stop with id {}'.format(stop_id))
     return dumps(entity)
+
 
 # =============== Facebook Oauth ================================================
 
@@ -322,6 +310,7 @@ def content(session, user_info):
     entity = db.user_data.find({'id': user_info['id']})
     return dumps(entity[0])
 
+
 # =============== Run the App ==========================================
 # if __name__ == "__name__":
 #     run(host='localhost', reloader=True, port=8080)
@@ -330,4 +319,3 @@ def content(session, user_info):
 
 bottle.debug(True)
 bottle.run(app=app, host='localhost', port='8080')
-
