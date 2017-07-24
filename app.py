@@ -27,13 +27,17 @@ import urllib.request
 import datetime
 
 # =============================================================
-# ================== Database Connections =====================
+# ================== Install Sessions Plugin ==================
 # =============================================================
 
 app = bottle.app()
 # this starts the plugin 
 plugin = bottle_session.SessionPlugin(cookie_lifetime=1200)
 app.install(plugin)
+
+# =============================================================
+# ================== OAUTH Global Variables ===================
+# =============================================================
 
 # this knocks off oauthlibs demand for https
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -47,6 +51,10 @@ authorization_base_url = 'https://www.facebook.com/dialog/oauth'
 token_url = 'https://graph.facebook.com/oauth/access_token'
 redirect_uri = 'http://localhost:8080/login/'     # Should match Site URL
 facebook_user_profile = 'https://graph.facebook.com/me?'
+
+# =============================================================
+# ================== Database Connections =====================
+# =============================================================
 
 # red = redis.StrictRedis(host='localhost', port=6379, db=0)
 connection = MongoClient(host='localhost', port=27017)
@@ -306,8 +314,6 @@ def content(session, user_info):
     entity = db.user_data.find({'id': user_info['id']})
     return dumps(entity[0])
 
-# def logout(session):
-
 # =============== Run the App ==========================================
 # if __name__ == "__name__":
 #     run(host='localhost', reloader=True, port=8080)
@@ -316,13 +322,4 @@ def content(session, user_info):
 
 bottle.debug(True)
 bottle.run(app=app, host='localhost', port='8080')
-
-
-
-
-
-
-
-
-
 
