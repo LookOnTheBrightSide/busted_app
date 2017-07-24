@@ -36,7 +36,7 @@ plugin = bottle_session.SessionPlugin(cookie_lifetime=1200)
 app.install(plugin)
 
 # =============================================================
-# ================== OAUTH Global Variables ===================
+# ================== OAUTH Global Variables LOCALHOST =========
 # =============================================================
 
 # this knocks off oauthlibs demand for https
@@ -53,10 +53,25 @@ redirect_uri = 'http://localhost:8080/login/'     # Should match Site URL
 facebook_user_profile = 'https://graph.facebook.com/me?'
 
 # =============================================================
+# ================== OAUTH Global Variables ACCUBUS.INFO=======
+# =============================================================
+
+# # Credentials you get from registering a new application
+# client_id = '155589258333788'
+# client_secret = 'efe7a589209ed1903bdbf65c9713ac2b'
+
+# # OAuth endpoints given in the Facebook API documentation
+# authorization_base_url = 'https://www.facebook.com/dialog/oauth'
+# token_url = 'https://graph.facebook.com/oauth/access_token'
+# redirect_uri = 'https://accubus.info/login/'     # Should match Site URL
+# facebook_user_profile = 'https://graph.facebook.com/me?'
+
+# =============================================================
 # ================== Database Connections =====================
 # =============================================================
 
 # red = redis.StrictRedis(host='localhost', port=6379, db=0)
+
 connection = MongoClient(host='localhost', port=27017)
 db = connection.accubusDB
 
@@ -228,14 +243,12 @@ def get_document(src, dst):
 
 # =============== Get stop id ==========================================
 
-
 @bottle.route('/apiv1/stops/:stop_id', method='GET')
 def get_document(stop_id):
     entity = db.stops.find_one({"stop_id": str(stop_id)})
     if not entity:
         abort(404, 'No stop with id {}'.format(stop_id))
     return dumps(entity)
-
 
 # =============== Facebook Oauth ================================================
 
@@ -251,7 +264,7 @@ def validate_user(passed_function):
             user_info = facebook.get(facebook_user_profile).json()
             return passed_function(kwargs['session'], user_info)
         else:
-            return redirect('/logged_out')
+            return redirect('/')
     return validator
 
 @bottle.route('/oauth')
@@ -292,11 +305,6 @@ def logout(session):
     logout_url = 'https://www.facebook.com/logout.php?next=%s&access_token=%s' % (redirect_uri, temp_token)
     session.destroy()
     return redirect(logout_url)
-
-@bottle.route('/logged_out', method='get')
-def logged_out_page():
-    # an endpoint confirming that the user is logged out.
-    return static_file('logged_out.html', root="static/views")
 
 # =============== Emissions Page ================================================
 
