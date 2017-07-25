@@ -1,22 +1,4 @@
 $(document).ready(function () {
-  // user longitude and latitude
-  var user_lng,
-    user_lat;
-  // callback with wath to do with returned object
-  var location = function (position) {
-    user_lng = position.coords.longitude;
-    user_lat = position.coords.latitude;
-  }
-  $('#suggest_nearby_stops').click(function () {
-    navigator.geolocation.getCurrentPosition(location);
-    if (user_lat && user_lng) {
-      $.getJSON(`apiv1/stops/${user_lng}/${user_lat}`, function (data) {
-        $.each(data, function (key, val) {
-          $('#start_results').append(`<span class="listItem">${val.stop_id} : ${val.address} ${val.stop_name}</span>`);
-        })
-      })
-    }
-  });
 
   // ===============================
   // Initial setup for notifications
@@ -28,6 +10,60 @@ $(document).ready(function () {
       hideAfter: 3
     }
   }
+
+  // =====================================================
+
+
+  $('#suggest_nearby_stops').click(function () {
+    Messenger().run({
+      action: navigator.geolocation.getCurrentPosition(success, error),
+      successMessage: 'Successfully located your position!',
+      errorMessage: 'an error happened ...',
+      progressMessage: 'Locating your position xxx ...'
+    });
+
+
+    // =====================================================
+    // ==== Following functions are the callbacks ==========
+    // =====================================================
+    function error() {
+      return "Error: check your location permissions"
+    }
+
+    function success(position) {
+      var user_lat = position.coords.latitude;
+      var user_lng = position.coords.longitude;
+      if (user_lat && user_lng) {
+        $.getJSON(`apiv1/stops/${user_lng}/${user_lat}`, function (data) {
+          if ($('#start_results')) {
+            $('#start_results').html('');
+          }
+          var center = new google.maps.LatLng(data[0].location.coordinates[1],data[0].location.coordinates[0]);
+          $.each(data, function (key, val) {
+          //  nearest 5 stops found, add markers, drop pins on map, populate dropdown
+            var marker = new google.maps.Marker({
+              position: new google.maps.LatLng(val.location.coordinates[1],val.location.coordinates[0]),
+              map: map,
+              animation: google.maps.Animation.DROP,
+              icon: "http://labs.google.com/ridefinder/images/mm_20_green.png",
+              title: val.address
+            })
+            $('#start_results').append(`<span class="listItem">${val.stop_id} : ${val.address} ${val.stop_name}</span>`);
+          })
+          var user_position = new google.maps.Marker({
+            position: new google.maps.LatLng(user_lat, user_lng),
+            map: map,
+            optimized: false,
+            icon: "https://s22.postimg.org/a7z7pnm01/835_2.gif",
+            title: "You are here"
+          });
+          map.setCenter(center)
+          map.setZoom(16);
+        })
+      }
+    }
+  });
+
   // =====================================================================
   // listen for keyup event i.e typing
   // get the results of the keypress and query the database with that input
@@ -215,7 +251,7 @@ function initMap() {
   var map_options = {
     center: dublin,
     zoom: 12,
-    mapTypeId: 'roadmap'
+    mapTypeId: google.maps.MapTypeId.ROADMAP
   };
   var transitLayer = new google.maps.TransitLayer();
 

@@ -2,10 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+keys.py
 # C extensions
 *.so
-
+.vscode/
 # Distribution / packaging
 .Python
 env/

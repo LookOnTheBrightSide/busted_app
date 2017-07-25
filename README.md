@@ -2,7 +2,9 @@
 
 [![Build Status](https://travis-ci.com/LookOnTheBrightSide/busted_app.svg?token=67ZRMCE3p6XpMKUH71z1&branch=master)](https://travis-ci.com/LookOnTheBrightSide/busted_app)
 
-The live site is available here: [Acubus](http://acubus.info/)
+![accubus logo](https://s21.postimg.org/ygezrvzrb/Screen_Shot_2017-07-20_at_09.00.03.png)
+
+The live site is available here: [Accubus](http://accubus.info/)
 
 This is the documentation for Team Busted. A basic guide on how to set up your development environment will be detailed below. We use two GitHub repositories, one for misclelenous code that's written for the project (i.e Formatting data, cleaning up data etc). Our second repository is of the main application itself. This is the actual codebase for the deployed application. 
 
@@ -68,3 +70,43 @@ Branch names are prefixed by the collaborator's initials. Names should be descri
 ```tl_render_time_json```
 
 e.t.c
+
+
+## Server Side
+
+```$ ssh root@178.62.29.173```
+
+* note that password log in is disabled. You need the private key to gain access.
+
+From inside the mongo shell you need to run the following to index the gps locations
+
+```$ mongo```
+
+`> use accubusDB`
+
+`> db.stops.createIndex( { location: "2dsphere" } )`
+
+### Main app:
+```$ /srv/AppEnv/appdata```
+
+### Binaries
+
+```$ /srv/AppEnv/```
+
+### Start/Stop MongoDB 
+
+```$ sudo systemctl start mongodb```
+
+```$ sudo systemctl stop mongodb```
+
+### Start/Stop Application
+
+The following must be executed if any changes are made to the app.
+
+```$ systemctl start emperor.uwsgi```
+
+```$ systemctl stop emperor.uwsgi```
+
+### App logs
+
+```$ /srv/AppEnv/uwsgi.log```

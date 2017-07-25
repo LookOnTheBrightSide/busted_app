@@ -9,7 +9,9 @@ import bottle
 import pickle
 import redis
 import json
+import re
 import requests
+from keys import *
 from sklearn import svm
 from sklearn import datasets
 from bottle import route, run, request, abort, static_file, get
@@ -140,10 +142,9 @@ def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, predic
 # ====================================================================
 
 
-@route('/apiv1/route/start/:start_stop/end/:end_stop', method='GET')
-def get_stops_from_origin(start_stop, end_stop):
-    entity = db.routes.find({"$and": [{"route_stops.stop_id": str(start_stop)},
-                                      {"route_stops.stop_id": str(end_stop)}]})
+
+# =============== Helper function for buses ==========================
+def direct_buses(entity, start_stop, end_stop):
     buses_that_can_be_taken = []
     route_patterns = []
     buses_with_times = {}
@@ -162,6 +163,52 @@ def get_stops_from_origin(start_stop, end_stop):
                 buses_with_times[i["route"]] = predictor(start_index, end_index, 3, 5,
                                                          prediction_model)
     return dumps(buses_with_times)
+
+# ====================================================================
+
+
+@route('/apiv1/route/start/:start_stop/end/:end_stop', method='GET')
+def get_stops_from_origin(start_stop, end_stop):
+    entity = db.routes.find({"$and": [{"route_stops.stop_id": str(start_stop)},
+                                      {"route_stops.stop_id": str(end_stop)}]})
+    if entity.count():
+        return direct_buses(entity, start_stop, end_stop)
+    else:
+        start_stop_gps = db.stops.find_one({"stop_id": str(start_stop)})
+        end_stop_gps = db.stops.find_one({"stop_id": str(end_stop)})
+        query_path = """https://maps.googleapis.com/maps/api/directions/json?origin=
+                        {},{}&destination={},{}&alternatives=true&
+                        mode=transit&key={}
+                        """.format(
+                            float(start_stop_gps['location']['coordinates'][1]),
+                            float(start_stop_gps['location']['coordinates'][0]),
+                            float(end_stop_gps['location']['coordinates'][1]),
+                            float(end_stop_gps['location']['coordinates'][0]), MAP_KEY)
+
+        trimmer = re.compile(r'\s+')
+        path = trimmer.sub('', query_path)
+        response = requests.get(path)
+
+        # print(type(response))
+
+        # result = json.loads(response)
+        # print(type(result))
+        bus_routes = {}
+        res = response.json()
+        print(res['routes'])
+        for i in res:
+            for j in res['routes']:
+                for k in j['legs']:
+                    bus_routes['Final Destination'] = k['end_address']
+                    bus_routes['Start Address'] = k['start_address']
+                    for l in k['steps']:
+                        bus_routes['For Distance Of'] = k['distance']['text']
+                        bus_routes['Instructions'] = l['html_instructions']
+                        bus_routes['Polyline'] = l['polyline']['points']
+                        # bus_routes['Transit Details'] = l['transit_details']['name']
+                        # bus_routes['Take Bus'] = l['line']['short_name']
+        return dumps(bus_routes)
+        # return response.json()
 
 # ============== Find the 5 nearest stops =============================
 
@@ -206,6 +253,6 @@ def get_document(stop_id):
 # =============== Run the App ==========================================
 # if __name__ == "__name__":
 #     run(host='localhost', reloader=True, port=8080)
-# run(host='localhost', reloader=True, port=8080)
+run(host='localhost', reloader=True, port=8088)
 # app = bottle.default_app()
-app = bottle.default_app()
+# app = bottle.default_app()
