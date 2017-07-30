@@ -69,12 +69,14 @@ $(document).ready(function () {
   });
 
 $.getJSON(`/get_journey/`, function(data) {
-
   car_emissions = 0
   bus_emissions = 0
-  for(i = 0; i < data.journey.length; i++){
-    bus_emissions += Number(data.journey[i][2]) * 77
-    car_emissions += Number(data.journey[i][2]) * band_to_c02(data.journey[i][0])
+
+  // console.log(data.journey.journey.journey);
+
+  for(i = 0; i < data.journey.journey.length; i++){
+    bus_emissions += Number(data.journey.journey[i][2]) * 77
+    car_emissions += Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])
   }
 
     $('.counter').each(function() {
@@ -108,13 +110,13 @@ $.getJSON(`/get_journey/`, function(data) {
 
     table = []
     row = []
-    for(i = 0; i < data.journey.length; i++){
+    for(i = 0; i < data.journey.journey.length; i++){
       row = []
       row.push(i+1)
-      row.push(Number(data.journey[i][2]) * 77);
-      row.push("<div>Bus CO2 Emissions: " + (Number(data.journey[i][2]) * 77).toString() + " grams.</div>")
-      row.push(Number(data.journey[i][2]) * band_to_c02(data.journey[i][0]));
-      row.push("<div>Bus CO2 Emissions: " + (Number(data.journey[i][2]) * band_to_c02(data.journey[i][0])) + " grams.</div><div>Car tax band: " + data.journey[i][0] + "</div>")
+      row.push(Number(data.journey.journey[i][2]) * 77);
+      row.push("<div>Bus CO2 Emissions: " + (Number(data.journey.journey[i][2]) * 77).toString() + " grams.</div>")
+      row.push(Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0]));
+      row.push("<div>Bus CO2 Emissions: " + (Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])) + " grams.</div><div>Car tax band: " + data.journey.journey[i][0] + "</div>")
       table.push(row);
     }
 
