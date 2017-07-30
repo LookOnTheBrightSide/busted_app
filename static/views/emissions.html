@@ -4,37 +4,64 @@
 	<meta charset="UTF-8">
 	<title>Document</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 	<!-- latest minified version of mapzen.js -->
 	
 	<script src="https://mapzen.com/js/mapzen.min.js"></script>
 	<link rel="stylesheet" href="https://mapzen.com/js/mapzen.css">
 	<link rel="stylesheet" type="text/css" href="/static/css/custom.css">
+
 </head>
 <body>
 	<header>
 		<div id="menu">
 			<a href="#" id="logo"></a>
-			<a href="/logout">Logout</a>
+			<div id="login_details">
+				<a href="/logout">Logout</a>
+				<div id="login_name"></div>
+				<div id="last_login"></div>
+				<div id="login_pic"></div>
+			</div>
 		</div>
 	</header>
 	<main>
-		<div id="target">
+		<aside>
 		</div>
-		<div id="target_pic">
+		
+
+		<div>
+		<div class="counter">0</div><div> CO2 grams saved so far!</div>
+		<div id="curve_chart" style="width: 700px; height: 500px">
+		</div>
+		</div>
+		<div>
+			<input id="route" name="route" type="text" placeholder="route" required>
+			<input id="distance" name="distance" type="text" placeholder="distance" required>
+			<button class="button button-default" id="send_route">Add Route and Distance to DB</button>
 		</div>
 
+		<div>
+			<select id="tax">
+			  <option value="a0">A0 - 0 CO2 €120</option>
+			  <option value="a1">A1 - 1 – 80g/km CO2 €170</option>
+			  <option value="a2">A2 - 81 – 100g/km CO2 €180</option>
+			  <option value="a3">A3 - 101 – 110g/km CO2 €190</option>
+			  <option value="a4">A4 - 111 – 129g/km CO2 €200</option>
+			  <option value="b1">B1 - 121 – 130g/km CO2 €270</option>
+			  <option value="b2">B2 - 131 – 140g/km CO2 €280</option>
+			  <option value="c">C - 141 – 155g/km CO2 €390</option>
+  			  <option value="d">D - 156 – 170g/km CO2 €570</option>
+			  <option value="e">E - 171 – 190g/km CO2 €750</option>
+			  <option value="f">F - 191 – 225g/km CO2 €1,200</option>
+			  <option value="g">G - 225g/km CO2 €120 or higher €2,350</option>
+			</select>
+			<button class="button button-default" id="send_tax">Select Your Cars Tax Bracket</button>
+		</div>
+		<div id="result">
+		</aside>
+
 	</main>
-		<script type="text/javascript">
-		var target = document.getElementById('target');
-		var target_pic = document.getElementById('target_pic');
-		target.innerHTML = "";
-		target_pic.innerHTML = "";
-		$.get("http://localhost:8080/user_data", function(data){
-			var obj = JSON.parse(data);
-			target.innerHTML += ("This is your facebook name: " + obj.name + ". " + "This is your facebook id: " + obj.id + ".");
-			target_pic.innerHTML += ("<img src='http://graph.facebook.com/" + obj.id + "/picture?type=square'>");
-		});
-	</script>
+	<script src="/static/js/emissions.js"></script>
 </body>
 </html>
 

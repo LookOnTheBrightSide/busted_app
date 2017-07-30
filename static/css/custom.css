@@ -29,11 +29,50 @@ html {
 	color: white;
 }
 
+#last_login {
+	display: inline-block;
+}
+
+/* google charts style */
+.google-visualization-tooltip {
+	border: solid 1px #bdbdbd;
+	border-radius: 2px;
+	background-color: white;
+	position: absolute;
+	box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.6);
+	font-size: 15px;
+	-moz-box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.6);
+	-webkit-box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.6);
+	font-family: arial;
+	}
+
+.google-visualization-tooltip div {
+  padding:10px;
+	}
+
+/* counter  style*/ 
+.counter {
+	font-size:50px;
+	display: inline-block;
+}
+
+#curve_chart {
+	display: inline-block;
+}
+
 header a {
 	background-color: #303030;
 	color: white;
 	text-decoration: none;
-	font-size: 1.2rem;
+	font-size: 1.6rem;
+}
+
+header div {
+	background-color: #303030;
+	color: white;
+	text-decoration: none;
+	font-size: 1.6rem;
+	display: inline-block;
 }
 
 main {
@@ -162,6 +201,7 @@ h4 span{
 ul.messenger-theme-flat .messenger-message.alert-info .messenger-message-inner:before {
     background: #4B4DC2;
 }
+
 
 
 /*

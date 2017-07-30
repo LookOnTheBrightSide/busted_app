@@ -26,7 +26,7 @@ import bottle_session
 import os
 from functools import wraps
 import urllib.request
-import datetime
+import time
 
 # =============================================================
 # ================== Install Sessions Plugin ==================
@@ -285,13 +285,23 @@ def validate_user(passed_function):
     """this is a decorator used to validate any endpoints."""
     @wraps(passed_function)
     def validator(*args, **kwargs):
+
         user_session = kwargs['session'].get('oauth_token')
         if user_session is not None:
             temp_dict = {}
             temp_dict['access_token'] = kwargs['session']['oauth_token']
             facebook = OAuth2Session(client_id, token=temp_dict)
             user_info = facebook.get(facebook_user_profile).json()
-            return passed_function(kwargs['session'], user_info)
+            
+            templist = []
+            templist.append(kwargs['session'])
+            del kwargs['session']
+            templist.append(user_info)
+
+            for i in kwargs:
+                templist.append(kwargs[i])
+            
+            return passed_function(*templist)
         else:
             return redirect('/')
     return validator
@@ -318,10 +328,17 @@ def callback(session):
 
         """if user is a new user add database entry for them"""
         user_info = facebook.get(facebook_user_profile).json()
-        temp = db.user_data.find({'id': user_info['id']})
-        if temp.count() == 0:
-            data = {'id': user_info['id'], 'name': user_info['name']};
-            db.user_data.insert_one(data);
+        # temp = db.user_data.find({'id': user_info['id']})
+
+        db.user_data.find_one_and_update({'_id': user_info['id']},
+         {'$set': {'name': user_info['name']}}, upsert=True)
+        db.user_data.find_one_and_update({'_id': user_info['id']},
+         {'$set': {'car_tax': 'c'}}, upsert=True)
+
+         
+
+        db.user_data.find_one_and_update({'_id': user_info['id']},
+         {'$push': {'last_login': time.time()}}, upsert=True)
 
         # here is where we put the token in the session. the session is hashed and stored as a cookie in the users browser.
         session['oauth_token'] = temp_dict['access_token']
@@ -348,9 +365,64 @@ def emissions(session, user_info):
 @bottle.route('/user_data')
 @validate_user
 def content(session, user_info):
-    entity = db.user_data.find({'id': user_info['id']})
-    return dumps(entity[0])
+    # entity = db.user_data.find({'_id': user_info['id']})
+    return dumps(db.user_data.find({'_id': user_info['id']})[0])
 
+@bottle.route('/add_car_tax/:car_tax', method='GET')
+@validate_user
+def set_car_tax(session, user_info, car_tax):
+
+    db.user_data.find_one_and_update({'_id': user_info['id']},
+        {'$set': {'car_tax': car_tax}}, upsert=True)
+    return car_tax
+
+@bottle.route('/add_route_data/:route/:distance', method='GET')
+@validate_user
+def add_journey(session, user_info, route, distance):
+
+    # sample_journey = {"start_point": [-6.264897288,53.31704597], "end_point": [-6.256110584,53.29510352], "legs": [{"mode": "walk", "distance": .5}, {"mode": "bus", "jpid": "00161001", "distance": .5}]}
+    
+    find_user = db.user_data.find({'_id': user_info['id']})
+    sample_journey = [find_user[0]['car_tax'], route, distance]
+    db.user_data.find_one_and_update({'_id': user_info['id']},
+         {'$push': {'journey': sample_journey}}, upsert=True)
+    return "added"
+
+@bottle.route('/get_journey/', method='GET')
+@validate_user
+def add_journey(session, user_info):
+
+    result = {}
+    band = db.user_data.find_one({'_id': user_info['id']})['car_tax']
+    result['journey'] = db.user_data.find_one({'_id': user_info['id']})
+    return dumps(result)
+
+def band_to_c02(band):
+    if band == 'a0':
+        c02 = 0;
+    elif band == 'a1':
+        c02 = 80;
+    elif band == 'a2':
+        c02 = 100;
+    elif band == 'a3':
+        c02 = 110;
+    elif band == 'a4':
+        c02 = 120;
+    elif band == 'b1':
+        c02 = 130;
+    elif band == 'b2':
+        c02 = 140;
+    elif band == 'c':
+        c02 = 155;
+    elif band == 'd':
+        c02 = 170;
+    elif band == 'e':
+        c02 = 190;
+    elif band == 'f':
+        c02 = 225;
+    else:
+        c02 = 250;
+    return c02
 
 # =============== Run the App ==========================================
 # if __name__ == "__name__":
