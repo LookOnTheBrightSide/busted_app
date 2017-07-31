@@ -48,7 +48,7 @@ $(document).ready(function () {
   login_pic.innerHTML = "";
   last_login.innerHTML = "";
 
-  $.get("http://localhost:8080/user_data", function(data){
+  $.get(`/user_data`, function(data){
     var obj = JSON.parse(data);
     // get the second last login, eg the last time you were here.
     var timestamp = obj.last_login[obj.last_login.length - 2],
