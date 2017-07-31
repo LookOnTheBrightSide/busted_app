@@ -55,10 +55,10 @@ app.install(plugin)
 # =============================================================
 
 # # OAuth endpoints given in the Facebook API documentation
-# authorization_base_url = 'https://www.facebook.com/dialog/oauth'
-# token_url = 'https://graph.facebook.com/oauth/access_token'
-# redirect_uri = 'https://accubus.info/login/'     # Should match Site URL
-# facebook_user_profile = 'https://graph.facebook.com/me?'
+authorization_base_url = 'https://www.facebook.com/dialog/oauth'
+token_url = 'https://graph.facebook.com/oauth/access_token'
+redirect_uri = 'https://accubus.info/login/'     # Should match Site URL
+facebook_user_profile = 'https://graph.facebook.com/me?'
 
 # =============================================================
 # ================== Database Connections =====================
