@@ -424,12 +424,12 @@ def band_to_c02(band):
         c02 = 250;
     return c02
 
-# =============== Run the App ==========================================
-# if __name__ == "__name__":
-#     run(host='localhost', reloader=True, port=8080)
-# run(host='localhost', reloader=True, port=8088)
+# =============== Run the App ================================================
+
+# # run on server
 # app = bottle.default_app()
 
+# run locally for dev
 bottle.debug(True)
 bottle.run(app=app, host='localhost', port='8080')
 
