@@ -317,7 +317,7 @@ def fb_login(session):
 @bottle.route('/login/', method='get')
 def callback(session):
     """respond to facebook with auth code. receive token. add token to session."""
-    if request.url == "http://localhost:8080/login/":
+    if request.url == redirect_uri:
         redirect('/')
     else:
         temp_dict = {}
