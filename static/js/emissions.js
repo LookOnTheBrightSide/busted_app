@@ -116,7 +116,7 @@ $.getJSON(`/get_journey/`, function(data) {
       row.push(Number(data.journey.journey[i][2]) * 77);
       row.push("<div>Bus CO2 Emissions: " + (Number(data.journey.journey[i][2]) * 77).toString() + " grams.</div>")
       row.push(Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0]));
-      row.push("<div>Bus CO2 Emissions: " + (Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])) + " grams.</div><div>Car tax band: " + data.journey.journey[i][0] + "</div>")
+      row.push("<div>Car CO2 Emissions: " + (Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])) + " grams.</div><div>Car tax band: " + data.journey.journey[i][0] + "</div>")
       table.push(row);
     }
 
