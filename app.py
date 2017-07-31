@@ -42,23 +42,23 @@ app.install(plugin)
 # =============================================================
 
 # this knocks off oauthlibs demand for https
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+# os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 # OAuth endpoints given in the Facebook API documentation
-authorization_base_url = 'https://www.facebook.com/dialog/oauth'
-token_url = 'https://graph.facebook.com/oauth/access_token'
-redirect_uri = 'http://localhost:8080/login/'     # Should match Site URL
-facebook_user_profile = 'https://graph.facebook.com/me?'
+# authorization_base_url = 'https://www.facebook.com/dialog/oauth'
+# token_url = 'https://graph.facebook.com/oauth/access_token'
+# redirect_uri = 'http://localhost:8080/login/'     # Should match Site URL
+# facebook_user_profile = 'https://graph.facebook.com/me?'
 
 # =============================================================
 # ================== OAUTH Global Variables ACCUBUS.INFO=======
 # =============================================================
 
 # # OAuth endpoints given in the Facebook API documentation
-# authorization_base_url = 'https://www.facebook.com/dialog/oauth'
-# token_url = 'https://graph.facebook.com/oauth/access_token'
-# redirect_uri = 'https://accubus.info/login/'     # Should match Site URL
-# facebook_user_profile = 'https://graph.facebook.com/me?'
+authorization_base_url = 'https://www.facebook.com/dialog/oauth'
+token_url = 'https://graph.facebook.com/oauth/access_token'
+redirect_uri = 'https://accubus.info/login/'     # Should match Site URL
+facebook_user_profile = 'https://graph.facebook.com/me?'
 
 # =============================================================
 # ================== Database Connections =====================
@@ -427,11 +427,11 @@ def band_to_c02(band):
 # =============== Run the App ================================================
 
 # # run on server
-# app = bottle.default_app()
+app = bottle.default_app()
 
 # run locally for dev
-bottle.debug(True)
-bottle.run(app=app, host='localhost', port='8080')
+# bottle.debug(True)
+# bottle.run(app=app, host='localhost', port='8080')
 
 
 
