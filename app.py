@@ -27,6 +27,7 @@ import os
 from functools import wraps
 import urllib.request
 import time
+import datetime
 
 # =============================================================
 # ================== Install Sessions Plugin ==================
@@ -162,12 +163,30 @@ def get_stops_from_destination(end_stop):
 # ====================================================================
 # ==================== Helper Method =================================
 
+def get_weather_forcast():
+    forecast_time = datetime.datetime(2017,8,2,16,59).timestamp()
+    r = requests.get('http://api.openweathermap.org/data/2.5/forecast?q=Dublin&APPID=1160274ac21e49d1ef2e0e5407489e91')
+    b_time = 1
+    for dt in range (0, r.json()['cnt']):
+        if r.json()['list'][dt]['dt'] <= forecast_time and r.json()['list'][dt+1]['dt'] >= forecast_time:
+            b_time = r.json()['list'][dt+1]['dt']
+            a_time = r.json()['list'][dt]['dt']
+            a = dt
+            b = dt+1
+    if (forecast_time - a_time) < (forecast_time - b_time):
+        final_dt = a
+    else:
+        final_dt = b
+    future_temp = r.json()['list'][final_dt]['main']['temp']-273.15
+    future_wind = r.json()['list'][final_dt]['wind']['speed']
+    return(future_temp,future_wind)
 
-def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, prediction_model):
+
+def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, prediction_model,temperature,wind):
     val_start = prediction_model.predict(
-        [int(start_stop_index), day_of_week, int(hour_of_day)])
+        [int(start_stop_index), day_of_week, int(hour_of_day), temperature,wind])
     val_end = prediction_model.predict(
-        [int(end_stop_index), day_of_week, int(hour_of_day)])
+        [int(end_stop_index), day_of_week, int(hour_of_day), temperature, wind])
     return (val_end - val_start) / 60
 
 # ====================================================================
@@ -180,6 +199,7 @@ def direct_buses(entity, start_stop, end_stop):
     buses_that_can_be_taken = []
     route_patterns = []
     buses_with_times = {}
+    temperature, wind = get_weather_forcast()
     for i in entity:
         for j in i['route_stops']:
             if j['stop_id'] == str(start_stop):
@@ -193,11 +213,10 @@ def direct_buses(entity, start_stop, end_stop):
                 prediction_model = joblib.load(
                     "models/{}.pk1".format(i["route_pattern_id"]))
                 buses_with_times[i["route"]] = predictor(start_index, end_index, 3, 5,
-                                                         prediction_model)
+                                                         prediction_model,temperature,wind)
     return dumps(buses_with_times)
 
 # ====================================================================
-
 
 @route('/apiv1/route/start/:start_stop/end/:end_stop', method='GET')
 def get_stops_from_origin(start_stop, end_stop):
