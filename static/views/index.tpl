@@ -2,13 +2,12 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-	<link rel="stylesheet" href="/static/css/reset.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger.min.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger-theme-flat.min.css">
-	<link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">  
-	<link rel="stylesheet" type="text/css" href="/static/css/custom.css">
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger-theme-flat.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/custom.css">
 </head>
 
 <%
@@ -64,21 +63,20 @@ end
 				</div>
 			</div>
 
-			<div class="submission">
-				<button class="button button-default" id="send_results">GO</button> <small><a id='show_advanced_options' href="#">advanced</a></small>
-			</div>
-			<div id="available_buses"></div>
-			<div id="bus_to_destination"></div>
-			<div id="bus_possibility"></div>
-		</aside>
-		<div id="map"></div>
-	</main>
-	<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-		crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/js/messenger.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/js/messenger-theme-flat.min.js"></script>
-	<script src="/static/js/app.js"></script>
-	<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZi0ETnSuaHfKU_yZX5CG2OPk55Uc7kSc&libraries=geometry,places&callback=initMap"></script>
+            <div class="submission">
+                <button class="button button-default" id="send_results">GO</button> <small><a id='show_advanced_options' href="#">advanced</a></small>
+            </div>
+            <div id="available_buses"></div>
+            <div id="bus_to_destination"></div>
+            <div id="bus_possibility"></div>
+        </aside>
+        <div id="map"></div>
+    </main>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/js/messenger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/js/messenger-theme-flat.min.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDZi0ETnSuaHfKU_yZX5CG2OPk55Uc7kSc&libraries=geometry,places&callback=initMap"></script>
 </body>
 
 </html>
