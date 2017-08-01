@@ -50,6 +50,9 @@ $(document).ready(function () {
 
   $.get(`/user_data`, function(data){
     var obj = JSON.parse(data);
+    console.log(obj.last_login)
+    if(obj.last_login.length != 1){
+      
     // get the second last login, eg the last time you were here.
     var timestamp = obj.last_login[obj.last_login.length - 2],
     date = new Date(timestamp * 1000),
@@ -65,6 +68,10 @@ $(document).ready(function () {
     login_name.innerHTML += (obj.name);
     last_login.innerHTML += ("Last Login: " + datevalues[2] + "-" + datevalues[1] + "-" + datevalues[0]);
     login_pic.innerHTML += ("<img src='http://graph.facebook.com/" + obj._id + "/picture?type=square'>");
+  }else{
+    login_name.innerHTML += (obj.name);
+    login_pic.innerHTML += ("<img src='http://graph.facebook.com/" + obj._id + "/picture?type=square'>");
+  }
   });
 
 $.getJSON(`/get_journey/`, function(data) {
