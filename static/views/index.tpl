@@ -11,15 +11,37 @@
 	<link rel="stylesheet" type="text/css" href="/static/css/custom.css">
 </head>
 
+<%
+import ast
+
+if 'user_info' in session:
+	user_info = ast.literal_eval(session['user_info'])
+	user_name = user_info['name']
+	user_id = user_info['id']
+end
+%>
+
 <body>
 	<header>
 		<div id="menu">
 			<a href="/" id="logo"></a>
-			<a href="/oauth">Facebook Login</a>
+			
+
+			% if defined('user_name'):
+			  <div id='logged_in'>{{user_name}}<div id='name'></div>
+			  <div id='pic'><img src='http://graph.facebook.com/{{user_id}}/picture?type=square'></div>
+			  <a href="/emissions">Emissions Tracker</a>
+			  <a href="/logout">Logout</a>
+			%else:
+				<a href="/oauth">Login</a>
+
+			% end
 
 		</div>
 	</header>
 	<main>
+
+
 		<aside>
 			<div class="start_stop input_inline">
 				<label for="start">From <small><span><a id="suggest_nearby_stops" href="#">find stops near me</a></span></small></label>
