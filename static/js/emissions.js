@@ -50,7 +50,6 @@ $(document).ready(function () {
 
   $.get(`/user_data`, function(data){
     var obj = JSON.parse(data);
-    console.log(obj.last_login)
     if(obj.last_login.length != 1){
       
     // get the second last login, eg the last time you were here.
@@ -145,8 +144,12 @@ $.getJSON(`/get_journey/`, function(data) {
       title: 'Emissions Data Per Journey',
       curveType: 'none',
       tooltip: {isHtml: true},
-      legend: { position: 'bottom' }
+      legend: { position: 'bottom' },
+      'width': 500,
+      'height': 400
     };
+
+                     
 
     var chart = new google.visualization.AreaChart(document.getElementById('curve_chart'));
 
