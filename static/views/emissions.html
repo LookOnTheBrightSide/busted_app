@@ -1,49 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-	<link rel="stylesheet" href="/static/css/reset.css">
-
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger.min.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger-theme-flat.min.css">
-
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
-	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	
-	<link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">  
-	<link rel="stylesheet" type="text/css" href="/static/css/custom.css">
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger-theme-flat.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/css/custom.css">
 
 </head>
-<body>
-	<header>
-		<div id="menu">
-			<a href="/" id="logo"></a>
-			<div id="login_details">
-				<a href="/logout">Logout</a>
-				<div id="login_name"></div>
-				<div id="last_login"></div>
-				<div id="login_pic"></div>
-			</div>
-		</div>
-	</header>
-	<main>
-		<aside>
-		</div>
-		<div>
-		<div class="counter">0</div><div> grams of CO2 saved so far!</div>
-		<div id="curve_chart" style="width: 700px; height: 500px">
-		</div>
-		</div>
-		<div>
-			<input id="route" name="route" type="text" placeholder="route" required>
-			<input id="distance" name="distance" type="text" placeholder="distance" required>
-			<button class="button button-default" id="send_route">Add Route and Distance to DB</button>
-		</div>
 
-		<div>
-			<select id="tax">
+<body>
+    <header>
+        <div id="menu">
+            <a href="/" id="logo"></a>
+            <div id="login_details">
+                <a class="logout" href="/logout">Logout</a>
+
+            </div>
+        </div>
+    </header>
+    <div class="flex_container">
+        <div class="left">
+            <div class="user">
+                <div id="login_pic"></div>
+                <div class="names">
+                    <h5 id="login_name"></h5>
+                    <p id="last_login"></p>
+                </div>
+            </div>
+
+            <!-- Form  -->
+            <div>
+                <input id="route" name="route" type="text" placeholder="route" required>
+                <input id="distance" name="distance" type="text" placeholder="distance" required>
+                <button class="button button-default" id="send_route">Add Route and Distance to DB</button>
+            </div>
+
+            <div>
+                <select id="tax">
 			  <option value="a0">A0 - 0 CO2 €120</option>
 			  <option value="a1">A1 - 1 – 80g/km CO2 €170</option>
 			  <option value="a2">A2 - 81 – 100g/km CO2 €180</option>
@@ -57,13 +55,20 @@
 			  <option value="f">F - 191 – 225g/km CO2 €1,200</option>
 			  <option value="g">G - 225g/km CO2 €120 or higher €2,350</option>
 			</select>
-			<button class="button button-default" id="send_tax">Select Your Cars Tax Bracket</button>
-		</div>
-		<div id="result">
-		</aside>
+                <button class="button button-default" id="send_tax">Select Your Cars Tax Bracket</button>
+            </div>
+            <div id="result"></div>
 
-	</main>
-	<script src="/static/js/emissions.js"></script>
+        </div>
+        <div class="right">
+            <div>
+                <h3 class="counter">0</h3>
+                <p> grams of CO2 saved so far!</p>
+                <div id="curve_chart"></div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/emissions.js"></script>
 </body>
-</html>
 
+</html>

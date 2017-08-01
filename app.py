@@ -164,7 +164,7 @@ def get_stops_from_destination(end_stop):
 # ==================== Helper Method =================================
 
 def get_weather_forcast():
-    forecast_time = datetime.datetime(2017,8,2,16,59).timestamp()
+    forecast_time = datetime.datetime(2017, 8, 2, 16, 59).timestamp()
     r = requests.get('http://api.openweathermap.org/data/2.5/forecast?q=Dublin&APPID=1160274ac21e49d1ef2e0e5407489e91')
     b_time = 1
     for dt in range (0, r.json()['cnt']):
@@ -184,9 +184,9 @@ def get_weather_forcast():
 
 def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, prediction_model,temperature,wind):
     val_start = prediction_model.predict(
-        [int(start_stop_index), day_of_week, int(hour_of_day), temperature,wind])
+        [[int(start_stop_index), day_of_week, int(hour_of_day), temperature,wind]])
     val_end = prediction_model.predict(
-        [int(end_stop_index), day_of_week, int(hour_of_day), temperature, wind])
+        [[int(end_stop_index), day_of_week, int(hour_of_day), temperature, wind]])
     return (val_end - val_start) / 60
 
 # ====================================================================
@@ -217,16 +217,28 @@ def direct_buses(entity, start_stop, end_stop):
     return dumps(buses_with_times)
 
 # ====================================================================
+# ======== Helper funtion to search for stop id using lat lng ========
+# ====================================================================
+def find_stop_id(gps_coordinates):
+    # print(gps_coordinates[0], gps_coordinates[1])
+    stop = db.stops.find_one({'location': {'$near': {'$geometry': {'type': 'Point', 'coordinates': [gps_coordinates[1], gps_coordinates[0]]}}}})
+    # stop = db.stops.find({'location' : {'$near':}})
+    # print(stop['stop_id'])
+    return stop['stop_id']
+
 
 @route('/apiv1/route/start/:start_stop/end/:end_stop', method='GET')
 def get_stops_from_origin(start_stop, end_stop):
     entity = db.routes.find({"$and": [{"route_stops.stop_id": str(start_stop)},
                                       {"route_stops.stop_id": str(end_stop)}]})
+    start_stop_gps = db.stops.find_one({"stop_id": str(start_stop)})
+    end_stop_gps = db.stops.find_one({"stop_id": str(end_stop)})
     if entity.count():
-        return direct_buses(entity, start_stop, end_stop)
+        travel_details = json.loads((direct_buses(entity, start_stop, end_stop)))
+        travel_details.update({"start_stop_coords": start_stop_gps['location']['coordinates'], "end_stop_coords": end_stop_gps['location']['coordinates']})
+        return dumps(travel_details)
     else:
-        start_stop_gps = db.stops.find_one({"stop_id": str(start_stop)})
-        end_stop_gps = db.stops.find_one({"stop_id": str(end_stop)})
+        
         query_path = """https://maps.googleapis.com/maps/api/directions/json?origin=
                         {},{}&destination={},{}&alternatives=true&
                         mode=transit&key={}
@@ -246,20 +258,64 @@ def get_stops_from_origin(start_stop, end_stop):
         # print(type(result))
         bus_routes = {}
         res = response.json()
-        print(res['routes'])
-        for i in res:
-            for j in res['routes']:
-                for k in j['legs']:
-                    bus_routes['Final Destination'] = k['end_address']
-                    bus_routes['Start Address'] = k['start_address']
-                    for l in k['steps']:
-                        bus_routes['For Distance Of'] = k['distance']['text']
-                        bus_routes['Instructions'] = l['html_instructions']
-                        bus_routes['Polyline'] = l['polyline']['points']
-                        # bus_routes['Transit Details'] = l['transit_details']['name']
-                        # bus_routes['Take Bus'] = l['line']['short_name']
-        return dumps(bus_routes)
+  
+        # return dumps(bus_routes)
+# ====================================================================
+        final_directions = []
+        for i in range(len(res['routes'])):
+            option = {}
+            # print(len(res['routes']), "...........................................")
+            option['fullPolyline'] = res['routes'][i]['overview_polyline']
+            for j in range(len(res['routes'][i]['legs'])):
+                option['arrivalTime'] = res['routes'][i]['legs'][j]['arrival_time']['text']
+                option['legDistance'] = res['routes'][i]['legs'][j]['distance']['text']
+                option['legDuration'] = res['routes'][i]['legs'][j]['duration']['text']
+                option['legStartAddress'] = res['routes'][i]['legs'][j]['start_address']
+                option['legStartLatLng'] = [res['routes'][i]['legs'][j]['start_location']['lat'], res['routes'][i]['legs'][j]['start_location']['lng']] 
+                # option['legStartStopId'] = find_stop_id(option['legStartLatLng'])
+                option['legEndAddress'] = res['routes'][i]['legs'][j]['end_address']
+                option['legEndLatLng'] = [res['routes'][i]['legs'][j]['start_location']['lat'], res['routes'][i]['legs'][j]['end_location']['lng']]
+                # option['legEndStopId'] = find_stop_id(option['legEndLatLng'])
+                for k in range(len(res['routes'][i]['legs'][j]['steps'])):
+                    option['stepInstructions'] = res['routes'][i]['legs'][j]['steps'][k]['html_instructions']
+                    option['stepPolyline'] = res['routes'][i]['legs'][j]['steps'][k]['polyline']['points']
+                    option['stepDistance'] = res['routes'][i]['legs'][j]['steps'][k]['distance']['text']
+                    option['stepDuration'] = res['routes'][i]['legs'][j]['steps'][k]['duration']['text']
+                    try:
+                        option['transitArrivalStopLatLng'] = [res['routes'][i]['legs'][j]['steps'][k]['transit_details']['arrival_stop']['location']['lat'],
+                        res['routes'][i]['legs'][j]['steps'][k]['transit_details']['arrival_stop']['location']['lng']]
+                        # option['transitArrivalStopId'] = find_stop_id(option['transitArrivalStopLatLng'])
+                        option['transitArrivalStopName'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['arrival_stop']['name']
+
+                        option['transitDepartureStopLatLng'] = [res['routes'][i]['legs'][j]['steps'][k]['transit_details']['departure_stop']['location']['lat'],
+                        res['routes'][i]['legs'][j]['steps'][k]['transit_details']['departure_stop']['location']['lng']]
+                        # option['transitDepartureStopId'] = find_stop_id(option['transitDepartureStopLatLng'])
+                        option['transitDepartureStopName'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['departure_stop']['name']
+
+                        option['transitNumberOfStops'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['num_stops']
+                        option['transitHeadSign'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['headsign']
+                        option['transitBusName'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['line']['short_name']
+                    except Exception as ex:
+                        # print(ex)
+                        pass    
+                        
+            option['legStartStopId'] = find_stop_id(option['legStartLatLng'])
+            option['legEndStopId'] = find_stop_id(option['legEndLatLng'])
+            option['transitArrivalStopId'] = find_stop_id(option['transitArrivalStopLatLng'])
+            option['transitDepartureStopId'] = find_stop_id(option['transitDepartureStopLatLng'])
+            option['accubusPrediction'] = ()
+            final_directions.append(option)
+
+                    
+
+        # return dumps(final_directions)
         # return response.json()
+        # print(res['routes'][0]['legs'][0]['end_location'])
+        # vals = 
+        return dumps({'start_stop_coords':[res['routes'][0]['legs'][0]['start_location']['lng'], \
+            res['routes'][0]['legs'][0]['start_location']['lat']],
+         'end_stop_coords':[res['routes'][0]['legs'][0]['end_location']['lng'],\
+         res['routes'][0]['legs'][0]['end_location']['lat']]})
 
 # ============== Find the 5 nearest stops =============================
 
@@ -418,29 +474,29 @@ def add_journey(session, user_info):
 
 def band_to_c02(band):
     if band == 'a0':
-        c02 = 0;
+        c02 = 0
     elif band == 'a1':
-        c02 = 80;
+        c02 = 80
     elif band == 'a2':
-        c02 = 100;
+        c02 = 100
     elif band == 'a3':
-        c02 = 110;
+        c02 = 110
     elif band == 'a4':
-        c02 = 120;
+        c02 = 120
     elif band == 'b1':
-        c02 = 130;
+        c02 = 130
     elif band == 'b2':
-        c02 = 140;
+        c02 = 140
     elif band == 'c':
-        c02 = 155;
+        c02 = 155
     elif band == 'd':
-        c02 = 170;
+        c02 = 170
     elif band == 'e':
-        c02 = 190;
+        c02 = 190
     elif band == 'f':
-        c02 = 225;
+        c02 = 225
     else:
-        c02 = 250;
+        c02 = 250
     return c02
 
 # =============== Run the App ================================================
