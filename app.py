@@ -6,7 +6,7 @@ Main application that serves the api and contains the trained model
 # =============================================================
 
 import bottle
-from bottle import Bottle, request, run, route, redirect, response, post
+from bottle import Bottle, request, run, route, redirect, response, post, template
 import pickle
 import redis
 import json
@@ -27,6 +27,8 @@ import os
 from functools import wraps
 import urllib.request
 import time
+import ast
+import datetime
 
 # =============================================================
 # ================== Install Sessions Plugin ==================
@@ -35,7 +37,7 @@ import time
 app = bottle.app()
 # this starts the plugin 
 plugin = bottle_session.SessionPlugin(cookie_lifetime=1200)
-app.install(plugin)
+app.install(plugin) 
 
 # =============================================================
 # ================== OAUTH Global Variables LOCALHOST =========
@@ -98,9 +100,10 @@ def views(filepath):
 
 
 # ================== Home page ==============================
+
 @bottle.route('/')
-def server_static():
-    return static_file('index.html', root="static/views")
+def server_static(session):
+    return template('./static/views/index', session=session)
 
 # ================== All stops json ===============================
 
@@ -162,12 +165,30 @@ def get_stops_from_destination(end_stop):
 # ====================================================================
 # ==================== Helper Method =================================
 
+def get_weather_forcast():
+    forecast_time = datetime.datetime(2017, 8, 2, 16, 59).timestamp()
+    r = requests.get('http://api.openweathermap.org/data/2.5/forecast?q=Dublin&APPID=1160274ac21e49d1ef2e0e5407489e91')
+    b_time = 1
+    for dt in range (0, r.json()['cnt']):
+        if r.json()['list'][dt]['dt'] <= forecast_time and r.json()['list'][dt+1]['dt'] >= forecast_time:
+            b_time = r.json()['list'][dt+1]['dt']
+            a_time = r.json()['list'][dt]['dt']
+            a = dt
+            b = dt+1
+    if (forecast_time - a_time) < (forecast_time - b_time):
+        final_dt = a
+    else:
+        final_dt = b
+    future_temp = r.json()['list'][final_dt]['main']['temp']-273.15
+    future_wind = r.json()['list'][final_dt]['wind']['speed']
+    return(future_temp,future_wind)
 
-def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, prediction_model):
+
+def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, prediction_model,temperature,wind):
     val_start = prediction_model.predict(
-        [int(start_stop_index), day_of_week, int(hour_of_day)])
+        [[int(start_stop_index), day_of_week, int(hour_of_day), temperature,wind]])
     val_end = prediction_model.predict(
-        [int(end_stop_index), day_of_week, int(hour_of_day)])
+        [[int(end_stop_index), day_of_week, int(hour_of_day), temperature, wind]])
     return (val_end - val_start) / 60
 
 # ====================================================================
@@ -176,10 +197,12 @@ def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, predic
 
 
 # =============== Helper function for buses ==========================
+
 def direct_buses(entity, start_stop, end_stop):
     buses_that_can_be_taken = []
     route_patterns = []
     buses_with_times = {}
+    temperature, wind = get_weather_forcast()
     for i in entity:
         for j in i['route_stops']:
             if j['stop_id'] == str(start_stop):
@@ -193,21 +216,33 @@ def direct_buses(entity, start_stop, end_stop):
                 prediction_model = joblib.load(
                     "models/{}.pk1".format(i["route_pattern_id"]))
                 buses_with_times[i["route"]] = predictor(start_index, end_index, 3, 5,
-                                                         prediction_model)
+                                                         prediction_model,temperature,wind)
     return dumps(buses_with_times)
 
 # ====================================================================
+# ======== Helper funtion to search for stop id using lat lng ========
+# ====================================================================
+
+def find_stop_id(gps_coordinates):
+    # print(gps_coordinates[0], gps_coordinates[1])
+    stop = db.stops.find_one({'location': {'$near': {'$geometry': {'type': 'Point', 'coordinates': [gps_coordinates[1], gps_coordinates[0]]}}}})
+    # stop = db.stops.find({'location' : {'$near':}})
+    # print(stop['stop_id'])
+    return stop['stop_id']
 
 
 @route('/apiv1/route/start/:start_stop/end/:end_stop', method='GET')
 def get_stops_from_origin(start_stop, end_stop):
     entity = db.routes.find({"$and": [{"route_stops.stop_id": str(start_stop)},
                                       {"route_stops.stop_id": str(end_stop)}]})
+    start_stop_gps = db.stops.find_one({"stop_id": str(start_stop)})
+    end_stop_gps = db.stops.find_one({"stop_id": str(end_stop)})
     if entity.count():
-        return direct_buses(entity, start_stop, end_stop)
+        travel_details = json.loads((direct_buses(entity, start_stop, end_stop)))
+        travel_details.update({"start_stop_coords": start_stop_gps['location']['coordinates'], "end_stop_coords": end_stop_gps['location']['coordinates']})
+        return dumps(travel_details)
     else:
-        start_stop_gps = db.stops.find_one({"stop_id": str(start_stop)})
-        end_stop_gps = db.stops.find_one({"stop_id": str(end_stop)})
+        
         query_path = """https://maps.googleapis.com/maps/api/directions/json?origin=
                         {},{}&destination={},{}&alternatives=true&
                         mode=transit&key={}
@@ -227,20 +262,64 @@ def get_stops_from_origin(start_stop, end_stop):
         # print(type(result))
         bus_routes = {}
         res = response.json()
-        print(res['routes'])
-        for i in res:
-            for j in res['routes']:
-                for k in j['legs']:
-                    bus_routes['Final Destination'] = k['end_address']
-                    bus_routes['Start Address'] = k['start_address']
-                    for l in k['steps']:
-                        bus_routes['For Distance Of'] = k['distance']['text']
-                        bus_routes['Instructions'] = l['html_instructions']
-                        bus_routes['Polyline'] = l['polyline']['points']
-                        # bus_routes['Transit Details'] = l['transit_details']['name']
-                        # bus_routes['Take Bus'] = l['line']['short_name']
-        return dumps(bus_routes)
+  
+        # return dumps(bus_routes)
+# ====================================================================
+        final_directions = []
+        for i in range(len(res['routes'])):
+            option = {}
+            # print(len(res['routes']), "...........................................")
+            option['fullPolyline'] = res['routes'][i]['overview_polyline']
+            for j in range(len(res['routes'][i]['legs'])):
+                option['arrivalTime'] = res['routes'][i]['legs'][j]['arrival_time']['text']
+                option['legDistance'] = res['routes'][i]['legs'][j]['distance']['text']
+                option['legDuration'] = res['routes'][i]['legs'][j]['duration']['text']
+                option['legStartAddress'] = res['routes'][i]['legs'][j]['start_address']
+                option['legStartLatLng'] = [res['routes'][i]['legs'][j]['start_location']['lat'], res['routes'][i]['legs'][j]['start_location']['lng']] 
+                # option['legStartStopId'] = find_stop_id(option['legStartLatLng'])
+                option['legEndAddress'] = res['routes'][i]['legs'][j]['end_address']
+                option['legEndLatLng'] = [res['routes'][i]['legs'][j]['start_location']['lat'], res['routes'][i]['legs'][j]['end_location']['lng']]
+                # option['legEndStopId'] = find_stop_id(option['legEndLatLng'])
+                for k in range(len(res['routes'][i]['legs'][j]['steps'])):
+                    option['stepInstructions'] = res['routes'][i]['legs'][j]['steps'][k]['html_instructions']
+                    option['stepPolyline'] = res['routes'][i]['legs'][j]['steps'][k]['polyline']['points']
+                    option['stepDistance'] = res['routes'][i]['legs'][j]['steps'][k]['distance']['text']
+                    option['stepDuration'] = res['routes'][i]['legs'][j]['steps'][k]['duration']['text']
+                    try:
+                        option['transitArrivalStopLatLng'] = [res['routes'][i]['legs'][j]['steps'][k]['transit_details']['arrival_stop']['location']['lat'],
+                        res['routes'][i]['legs'][j]['steps'][k]['transit_details']['arrival_stop']['location']['lng']]
+                        # option['transitArrivalStopId'] = find_stop_id(option['transitArrivalStopLatLng'])
+                        option['transitArrivalStopName'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['arrival_stop']['name']
+
+                        option['transitDepartureStopLatLng'] = [res['routes'][i]['legs'][j]['steps'][k]['transit_details']['departure_stop']['location']['lat'],
+                        res['routes'][i]['legs'][j]['steps'][k]['transit_details']['departure_stop']['location']['lng']]
+                        # option['transitDepartureStopId'] = find_stop_id(option['transitDepartureStopLatLng'])
+                        option['transitDepartureStopName'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['departure_stop']['name']
+
+                        option['transitNumberOfStops'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['num_stops']
+                        option['transitHeadSign'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['headsign']
+                        option['transitBusName'] = res['routes'][i]['legs'][j]['steps'][k]['transit_details']['line']['short_name']
+                    except Exception as ex:
+                        # print(ex)
+                        pass    
+                        
+            option['legStartStopId'] = find_stop_id(option['legStartLatLng'])
+            option['legEndStopId'] = find_stop_id(option['legEndLatLng'])
+            option['transitArrivalStopId'] = find_stop_id(option['transitArrivalStopLatLng'])
+            option['transitDepartureStopId'] = find_stop_id(option['transitDepartureStopLatLng'])
+            option['accubusPrediction'] = ()
+            final_directions.append(option)
+
+                    
+
+        # return dumps(final_directions)
         # return response.json()
+        # print(res['routes'][0]['legs'][0]['end_location'])
+        # vals = 
+        return dumps({'start_stop_coords':[res['routes'][0]['legs'][0]['start_location']['lng'], \
+            res['routes'][0]['legs'][0]['start_location']['lat']],
+         'end_stop_coords':[res['routes'][0]['legs'][0]['end_location']['lng'],\
+         res['routes'][0]['legs'][0]['end_location']['lat']]})
 
 # ============== Find the 5 nearest stops =============================
 
@@ -255,19 +334,19 @@ def get_nearby_stops(lat, lng):
 
 # ============== Use Google Api so suggest connecting buses ===========
 
-@bottle.route('/src/:src/dst/:dst', method='GET')
-def get_document(src, dst):
-    src = src.replace('_', '+')
-    dst = dst.replace('_', '+')
-    google_api_url = ("""https://maps.googleapis.com/maps/api/directions/json?
-        origin={}&destination={}&mode=transit&sensor=false&transit_mode=bus&
-        key=AIzaSyCVxRxsS43t9mXRFz80L3uSCo2ZfrsA_40""").format(src, dst)
-    directions = requests.get(google_api_url)
-    result = directions.json()
-    # temp = []
-    # for i in range(0, len(result["routes"][0]["legs"][0]["steps"])):
-    #     temp.append(result["routes"][0]["legs"][0]["steps"][i]["html_instructions"])
-    return dumps(result)
+# @bottle.route('/src/:src/dst/:dst', method='GET')
+# def get_document(src, dst):
+#     src = src.replace('_', '+')
+#     dst = dst.replace('_', '+')
+#     google_api_url = ("""https://maps.googleapis.com/maps/api/directions/json?
+#         origin={}&destination={}&mode=transit&sensor=false&transit_mode=bus&
+#         key=AIzaSyCVxRxsS43t9mXRFz80L3uSCo2ZfrsA_40""").format(src, dst)
+#     directions = requests.get(google_api_url)
+#     result = directions.json()
+#     # temp = []
+#     # for i in range(0, len(result["routes"][0]["legs"][0]["steps"])):
+#     #     temp.append(result["routes"][0]["legs"][0]["steps"][i]["html_instructions"])
+#     return dumps(result)
 
 # =============== Get stop id ==========================================
 
@@ -291,16 +370,13 @@ def validate_user(passed_function):
             temp_dict = {}
             temp_dict['access_token'] = kwargs['session']['oauth_token']
             facebook = OAuth2Session(client_id, token=temp_dict)
-            user_info = facebook.get(facebook_user_profile).json()
             
             templist = []
             templist.append(kwargs['session'])
             del kwargs['session']
-            templist.append(user_info)
 
             for i in kwargs:
                 templist.append(kwargs[i])
-            
             return passed_function(*templist)
         else:
             return redirect('/')
@@ -334,15 +410,13 @@ def callback(session):
          {'$set': {'name': user_info['name']}}, upsert=True)
         db.user_data.find_one_and_update({'_id': user_info['id']},
          {'$set': {'car_tax': 'c'}}, upsert=True)
-
-         
-
         db.user_data.find_one_and_update({'_id': user_info['id']},
          {'$push': {'last_login': time.time()}}, upsert=True)
 
         # here is where we put the token in the session. the session is hashed and stored as a cookie in the users browser.
         session['oauth_token'] = temp_dict['access_token']
-        return redirect('/emissions')
+        session['user_info'] = user_info
+        return redirect('/')
 
 @bottle.route('/logout', method='get')
 def logout(session):
@@ -355,43 +429,45 @@ def logout(session):
 # =============== Emissions Page ================================================
 
 # the validate_user decorator needs the function to have session and user_info as inputs.
-
 @bottle.route('/emissions')
 @validate_user
-def emissions(session, user_info):
-    """returns """
+def emissions(session):
+    """returns"""
     return static_file('emissions.html', root="static/views")
 
 @bottle.route('/user_data')
 @validate_user
-def content(session, user_info):
+def content(session):
     # entity = db.user_data.find({'_id': user_info['id']})
+    user_info = ast.literal_eval(session['user_info'])
     return dumps(db.user_data.find({'_id': user_info['id']})[0])
 
 @bottle.route('/add_car_tax/:car_tax', method='GET')
 @validate_user
-def set_car_tax(session, user_info, car_tax):
+def set_car_tax(session, car_tax):
 
+    user_info = ast.literal_eval(session['user_info'])
     db.user_data.find_one_and_update({'_id': user_info['id']},
         {'$set': {'car_tax': car_tax}}, upsert=True)
     return car_tax
 
 @bottle.route('/add_route_data/:route/:distance', method='GET')
 @validate_user
-def add_journey(session, user_info, route, distance):
-
+def add_route_data(session, route, distance):
     # sample_journey = {"start_point": [-6.264897288,53.31704597], "end_point": [-6.256110584,53.29510352], "legs": [{"mode": "walk", "distance": .5}, {"mode": "bus", "jpid": "00161001", "distance": .5}]}
-    
+    user_info = ast.literal_eval(session['user_info'])
     find_user = db.user_data.find({'_id': user_info['id']})
     sample_journey = [find_user[0]['car_tax'], route, distance]
     db.user_data.find_one_and_update({'_id': user_info['id']},
          {'$push': {'journey': sample_journey}}, upsert=True)
-    return "added"
+    temp = [["added"]]
+    return dumps(temp)
 
 @bottle.route('/get_journey/', method='GET')
 @validate_user
-def add_journey(session, user_info):
+def add_journey(session):
 
+    user_info = ast.literal_eval(session['user_info'])
     result = {}
     band = db.user_data.find_one({'_id': user_info['id']})['car_tax']
     result['journey'] = db.user_data.find_one({'_id': user_info['id']})
@@ -399,29 +475,29 @@ def add_journey(session, user_info):
 
 def band_to_c02(band):
     if band == 'a0':
-        c02 = 0;
+        c02 = 0
     elif band == 'a1':
-        c02 = 80;
+        c02 = 80
     elif band == 'a2':
-        c02 = 100;
+        c02 = 100
     elif band == 'a3':
-        c02 = 110;
+        c02 = 110
     elif band == 'a4':
-        c02 = 120;
+        c02 = 120
     elif band == 'b1':
-        c02 = 130;
+        c02 = 130
     elif band == 'b2':
-        c02 = 140;
+        c02 = 140
     elif band == 'c':
-        c02 = 155;
+        c02 = 155
     elif band == 'd':
-        c02 = 170;
+        c02 = 170
     elif band == 'e':
-        c02 = 190;
+        c02 = 190
     elif band == 'f':
-        c02 = 225;
+        c02 = 225
     else:
-        c02 = 250;
+        c02 = 250
     return c02
 
 # =============== Run the App ================================================
