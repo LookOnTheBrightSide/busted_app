@@ -27,10 +27,11 @@ end
 			
 
 			% if defined('user_name'):
-			  <div id='logged_in'>{{user_name}}<div id='name'></div>
-			  <div id='pic'><img src='http://graph.facebook.com/{{user_id}}/picture?type=square'></div>
-			  <a href="/emissions">Emissions Tracker</a>
-			  <a href="/logout">Logout</a>
+			  <a id="tracker" href="/emissions">Emissions Tracker</a>
+			  <div id='logged_in'>{{user_name}}</div>
+			  <div id='name'></div>
+			  <!-- <div id='pic'><img src='http://graph.facebook.com/{{user_id}}/picture?type=square'></div> -->
+			  <a id="logout" href="/logout">Logout</a>
 			%else:
 				<a href="/oauth">Login</a>
 			% end

@@ -335,10 +335,21 @@ a {
     transition: all .1s ease
 }
 
-a:hover {
-    color: #222
+header a:hover {
+    color: #00e03f
 }
 
+#logged_in,
+#tracker,
+#logout,
+#logged_in{
+    align-self: center;
+    padding: 0 1rem;
+}
+
+#tracker{
+    margin-left: auto;
+}
 [type=submit],
 button {
     padding: 1.1rem 3.5rem;
