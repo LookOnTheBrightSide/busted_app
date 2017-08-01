@@ -6,7 +6,7 @@ Main application that serves the api and contains the trained model
 # =============================================================
 
 import bottle
-from bottle import Bottle, request, run, route, redirect, response, post
+from bottle import Bottle, request, run, route, redirect, response, post, template
 import pickle
 import redis
 import json
@@ -27,6 +27,7 @@ import os
 from functools import wraps
 import urllib.request
 import time
+import ast
 import datetime
 
 # =============================================================
@@ -36,7 +37,7 @@ import datetime
 app = bottle.app()
 # this starts the plugin 
 plugin = bottle_session.SessionPlugin(cookie_lifetime=1200)
-app.install(plugin)
+app.install(plugin) 
 
 # =============================================================
 # ================== OAUTH Global Variables LOCALHOST =========
@@ -99,9 +100,10 @@ def views(filepath):
 
 
 # ================== Home page ==============================
+
 @bottle.route('/')
-def server_static():
-    return static_file('index.html', root="static/views")
+def server_static(session):
+    return template('./static/views/index', session=session)
 
 # ================== All stops json ===============================
 
@@ -195,6 +197,7 @@ def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, predic
 
 
 # =============== Helper function for buses ==========================
+
 def direct_buses(entity, start_stop, end_stop):
     buses_that_can_be_taken = []
     route_patterns = []
@@ -219,6 +222,7 @@ def direct_buses(entity, start_stop, end_stop):
 # ====================================================================
 # ======== Helper funtion to search for stop id using lat lng ========
 # ====================================================================
+
 def find_stop_id(gps_coordinates):
     # print(gps_coordinates[0], gps_coordinates[1])
     stop = db.stops.find_one({'location': {'$near': {'$geometry': {'type': 'Point', 'coordinates': [gps_coordinates[1], gps_coordinates[0]]}}}})
@@ -366,16 +370,13 @@ def validate_user(passed_function):
             temp_dict = {}
             temp_dict['access_token'] = kwargs['session']['oauth_token']
             facebook = OAuth2Session(client_id, token=temp_dict)
-            user_info = facebook.get(facebook_user_profile).json()
             
             templist = []
             templist.append(kwargs['session'])
             del kwargs['session']
-            templist.append(user_info)
 
             for i in kwargs:
                 templist.append(kwargs[i])
-            
             return passed_function(*templist)
         else:
             return redirect('/')
@@ -409,15 +410,13 @@ def callback(session):
          {'$set': {'name': user_info['name']}}, upsert=True)
         db.user_data.find_one_and_update({'_id': user_info['id']},
          {'$set': {'car_tax': 'c'}}, upsert=True)
-
-         
-
         db.user_data.find_one_and_update({'_id': user_info['id']},
          {'$push': {'last_login': time.time()}}, upsert=True)
 
         # here is where we put the token in the session. the session is hashed and stored as a cookie in the users browser.
         session['oauth_token'] = temp_dict['access_token']
-        return redirect('/emissions')
+        session['user_info'] = user_info
+        return redirect('/')
 
 @bottle.route('/logout', method='get')
 def logout(session):
@@ -430,33 +429,34 @@ def logout(session):
 # =============== Emissions Page ================================================
 
 # the validate_user decorator needs the function to have session and user_info as inputs.
-
 @bottle.route('/emissions')
 @validate_user
-def emissions(session, user_info):
-    """returns """
+def emissions(session):
+    """returns"""
     return static_file('emissions.html', root="static/views")
 
 @bottle.route('/user_data')
 @validate_user
-def content(session, user_info):
+def content(session):
     # entity = db.user_data.find({'_id': user_info['id']})
+    user_info = ast.literal_eval(session['user_info'])
     return dumps(db.user_data.find({'_id': user_info['id']})[0])
 
 @bottle.route('/add_car_tax/:car_tax', method='GET')
 @validate_user
-def set_car_tax(session, user_info, car_tax):
+def set_car_tax(session, car_tax):
 
+    user_info = ast.literal_eval(session['user_info'])
     db.user_data.find_one_and_update({'_id': user_info['id']},
         {'$set': {'car_tax': car_tax}}, upsert=True)
     return car_tax
 
 @bottle.route('/add_route_data/:route/:distance', method='GET')
 @validate_user
-def add_journey(session, user_info, route, distance):
+def add_journey(session, route, distance):
 
     # sample_journey = {"start_point": [-6.264897288,53.31704597], "end_point": [-6.256110584,53.29510352], "legs": [{"mode": "walk", "distance": .5}, {"mode": "bus", "jpid": "00161001", "distance": .5}]}
-    
+    user_info = ast.literal_eval(session['user_info'])
     find_user = db.user_data.find({'_id': user_info['id']})
     sample_journey = [find_user[0]['car_tax'], route, distance]
     db.user_data.find_one_and_update({'_id': user_info['id']},
@@ -465,8 +465,9 @@ def add_journey(session, user_info, route, distance):
 
 @bottle.route('/get_journey/', method='GET')
 @validate_user
-def add_journey(session, user_info):
+def add_journey(session):
 
+    user_info = ast.literal_eval(session['user_info'])
     result = {}
     band = db.user_data.find_one({'_id': user_info['id']})['car_tax']
     result['journey'] = db.user_data.find_one({'_id': user_info['id']})
