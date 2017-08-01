@@ -94,10 +94,10 @@ $.getJSON(`/get_journey/`, function(data) {
         duration: 3000,
         easing:'linear',
         step: function() {
-          $this.text(Math.floor(this.countNum));
+          $this.text(Math.round(this.countNum));
         },
         complete: function() {
-          $this.text(this.countNum);
+          $this.text(Math.round(this.countNum));
         }
 
       }); 
