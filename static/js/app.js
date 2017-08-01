@@ -31,7 +31,9 @@ $(document).ready(function() {
 
     $('div.add_emissions:empty').hide();
     document.getElementById("add_emissions").addEventListener("click", function(){
-        $.getJSON(`/add_route_data/00161001/10`, {}, function(data) {
+        var distance = $("#emission_distance").text();
+        console.log(distance);
+        $.getJSON(`/add_route_data/00161001/${distance}`, {}, function(data) {
 
             Messenger().post({
                 message: 'Journey added to emissions tracker!',
