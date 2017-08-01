@@ -16,6 +16,23 @@ html {
     border: 1px solid #1c1c1c;
 }
 
+#flexed{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#inline_header{
+    /*display: inline-block;*/
+    text-align: center;
+}
+
+#saved_info{
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin-left: 2rem;
+}
+
 #send_results:hover {
     cursor: pointer;
     background-color: #444;
@@ -465,6 +482,7 @@ input[type="search"] {
     justify-content: space-around;
     border: 1px solid #000333;
     min-height: 93vh;
+    align-items: center;
 }
 
 .left {
@@ -477,8 +495,7 @@ input[type="search"] {
 }
 
 #curve_chart {
-    height: 500px;
-    width: 600px
+    width: 400px;
 }
 
 #login_name,
