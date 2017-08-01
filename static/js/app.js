@@ -238,6 +238,8 @@ $(document).ready(function() {
 
                     }, function(response, status) {
                         if (status == 'OK') {
+                            var distance = (response['routes'][0]['legs'][0]['distance']['value']/1000);
+                            $('#distance').html(`<span>Total distance: <strong id='emission_distance'>${distance}</strong></span>`)
                             directionsDisplay.setDirections(response);
                         } else {
                             Messenger().post({
