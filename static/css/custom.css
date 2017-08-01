@@ -21,6 +21,10 @@ html {
     background-color: #444;
 }
 
+#add_emissions{
+    cursor: pointer;
+}
+
 #right {
     min-width: 26%;
 }

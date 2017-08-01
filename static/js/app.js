@@ -29,6 +29,24 @@ $(document).ready(function() {
 
     // =====================================================
 
+    $('div.add_emissions:empty').hide();
+    document.getElementById("add_emissions").addEventListener("click", function(){
+        $.getJSON(`/add_route_data/00161001/10`, {}, function(data) {
+
+            Messenger().post({
+                message: 'Journey added to emissions tracker!',
+                type: 'success',
+                showCloseButton: true
+            });
+
+            // $('#add_emission_result').append("<div>Journey Added!</div>");
+        });
+    });
+
+
+
+    // =====================================================
+
     $('#suggest_nearby_stops').click(function() {
         Messenger().run({
             action: navigator.geolocation.getCurrentPosition(success, error),
@@ -235,10 +253,12 @@ $(document).ready(function() {
                     directionsDisplay.setMap(map);
                     // live api data
                     pull_live_data(start_stop_id);
+                    $('#add_emissions').html('').html(`<div>Add Journey To Emmissions</div>`);
                     $.each(data, function(index, val) {
                         if (index !== "end_stop_coords") {
                             if (index !== "start_stop_coords") {
-                                $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button-small">Accubus estimate for ${index} bus is ${Math.ceil(val)} minutes</span>`);
+                                $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button-small"> Accubus estimate for ${index} bus is ${Math.ceil(val)} minutes</span>`);
+                                // $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button-small"> Accubus estimate for ${index} bus is ${Math.ceil(val)} minutes</span>`);
                             }
                         }
                     })

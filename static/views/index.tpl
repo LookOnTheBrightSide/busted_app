@@ -33,7 +33,6 @@ end
 			  <a href="/logout">Logout</a>
 			%else:
 				<a href="/oauth">Login</a>
-
 			% end
 
 		</div>
@@ -69,7 +68,15 @@ end
             <div id="distance"></div>
             <div id="available_buses"></div>
             <div id="bus_to_destination"></div>
-            <div id="bus_possibility"></div>
+            % if defined('user_name'):
+            	<div id="add_emissions"></div>
+            	<div id="add_emission_result"></div>
+            % else:
+            	<div id="add_emissions" style="visibility: hidden"></div>
+			% end
+
+			<div id="bus_possibility"></div>
+
         </aside>
         <div id="map"></div>
     </main>
