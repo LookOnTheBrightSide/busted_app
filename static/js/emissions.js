@@ -65,40 +65,42 @@ $(document).ready(function () {
     login_name.innerHTML += (obj.name);
     last_login.innerHTML += ("Last Login: " + datevalues[2] + "-" + datevalues[1] + "-" + datevalues[0]);
     login_pic.innerHTML += ("<img src='http://graph.facebook.com/" + obj._id + "/picture?type=square'>");
-
   });
 
 $.getJSON(`/get_journey/`, function(data) {
   car_emissions = 0
   bus_emissions = 0
 
-  // console.log(data.journey.journey.journey);
-
-  for(i = 0; i < data.journey.journey.length; i++){
-    bus_emissions += Number(data.journey.journey[i][2]) * 77
-    car_emissions += Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])
-  }
-
-    $('.counter').each(function() {
-    var $this = $(this),
-        countTo = car_emissions - bus_emissions;
-    
-    $({ countNum: $this.text()}).animate({
-      countNum: countTo
-    },
-
-    {
-      duration: 3000,
-      easing:'linear',
-      step: function() {
-        $this.text(Math.floor(this.countNum));
+  if(data.journey.hasOwnProperty('journey')){
+    for(i = 0; i < data.journey.journey.length; i++){
+      bus_emissions += Number(data.journey.journey[i][2]) * 77
+      car_emissions += Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])
+    }
+      $('.counter').each(function() {
+      var $this = $(this),
+          countTo = car_emissions - bus_emissions;
+      
+      $({ countNum: $this.text()}).animate({
+        countNum: countTo
       },
-      complete: function() {
-        $this.text(this.countNum);
-      }
 
-    }); 
-  });
+      {
+        duration: 3000,
+        easing:'linear',
+        step: function() {
+          $this.text(Math.floor(this.countNum));
+        },
+        complete: function() {
+          $this.text(this.countNum);
+        }
+
+      }); 
+    });
+    } else {
+      $('.counter').html("Enter some journeys and this page will track them!")
+      $('#saved_info').html('')
+      console.log("no data to present")
+    };
   });
 
   google.charts.load('current', {'packages':['corechart']});
@@ -107,18 +109,19 @@ $.getJSON(`/get_journey/`, function(data) {
   function drawChart() {
     
     $.getJSON(`/get_journey/`, function(data) {
-
     table = []
     row = []
-    for(i = 0; i < data.journey.journey.length; i++){
-      row = []
-      row.push(i+1)
-      row.push(Number(data.journey.journey[i][2]) * 77);
-      row.push("<div>Bus CO2 Emissions: " + (Number(data.journey.journey[i][2]) * 77).toString() + " grams.</div>")
-      row.push(Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0]));
-      row.push("<div>Car CO2 Emissions: " + (Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])) + " grams.</div><div>Car tax band: " + data.journey.journey[i][0] + "</div>")
-      table.push(row);
-    }
+    if(data.journey.hasOwnProperty('journey')){
+      // console.log("here")
+      for(i = 0; i < data.journey.journey.length; i++){
+        row = []
+        row.push(i+1)
+        row.push(Number(data.journey.journey[i][2]) * 77);
+        row.push("<div>Bus CO2 Emissions: " + (Number(data.journey.journey[i][2]) * 77).toString() + " grams.</div>")
+        row.push(Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0]));
+        row.push("<div>Car CO2 Emissions: " + (Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])) + " grams.</div><div>Car tax band: " + data.journey.journey[i][0] + "</div>")
+        table.push(row);
+      }
 
     var dataTable = new google.visualization.DataTable();
     // var dataTable = new google.visualization.DataTable();
@@ -141,6 +144,10 @@ $.getJSON(`/get_journey/`, function(data) {
     var chart = new google.visualization.AreaChart(document.getElementById('curve_chart'));
 
     chart.draw(dataTable, options);
+
+    } else {
+      console.log("no data either, ")
+    }
 
     })
   };

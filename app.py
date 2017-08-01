@@ -334,19 +334,19 @@ def get_nearby_stops(lat, lng):
 
 # ============== Use Google Api so suggest connecting buses ===========
 
-@bottle.route('/src/:src/dst/:dst', method='GET')
-def get_document(src, dst):
-    src = src.replace('_', '+')
-    dst = dst.replace('_', '+')
-    google_api_url = ("""https://maps.googleapis.com/maps/api/directions/json?
-        origin={}&destination={}&mode=transit&sensor=false&transit_mode=bus&
-        key=AIzaSyCVxRxsS43t9mXRFz80L3uSCo2ZfrsA_40""").format(src, dst)
-    directions = requests.get(google_api_url)
-    result = directions.json()
-    # temp = []
-    # for i in range(0, len(result["routes"][0]["legs"][0]["steps"])):
-    #     temp.append(result["routes"][0]["legs"][0]["steps"][i]["html_instructions"])
-    return dumps(result)
+# @bottle.route('/src/:src/dst/:dst', method='GET')
+# def get_document(src, dst):
+#     src = src.replace('_', '+')
+#     dst = dst.replace('_', '+')
+#     google_api_url = ("""https://maps.googleapis.com/maps/api/directions/json?
+#         origin={}&destination={}&mode=transit&sensor=false&transit_mode=bus&
+#         key=AIzaSyCVxRxsS43t9mXRFz80L3uSCo2ZfrsA_40""").format(src, dst)
+#     directions = requests.get(google_api_url)
+#     result = directions.json()
+#     # temp = []
+#     # for i in range(0, len(result["routes"][0]["legs"][0]["steps"])):
+#     #     temp.append(result["routes"][0]["legs"][0]["steps"][i]["html_instructions"])
+#     return dumps(result)
 
 # =============== Get stop id ==========================================
 
@@ -453,15 +453,15 @@ def set_car_tax(session, car_tax):
 
 @bottle.route('/add_route_data/:route/:distance', method='GET')
 @validate_user
-def add_journey(session, route, distance):
-
+def add_route_data(session, route, distance):
     # sample_journey = {"start_point": [-6.264897288,53.31704597], "end_point": [-6.256110584,53.29510352], "legs": [{"mode": "walk", "distance": .5}, {"mode": "bus", "jpid": "00161001", "distance": .5}]}
     user_info = ast.literal_eval(session['user_info'])
     find_user = db.user_data.find({'_id': user_info['id']})
     sample_journey = [find_user[0]['car_tax'], route, distance]
     db.user_data.find_one_and_update({'_id': user_info['id']},
          {'$push': {'journey': sample_journey}}, upsert=True)
-    return "added"
+    temp = [["added"]]
+    return dumps(temp)
 
 @bottle.route('/get_journey/', method='GET')
 @validate_user
