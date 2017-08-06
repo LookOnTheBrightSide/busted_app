@@ -166,7 +166,8 @@ def get_stops_from_destination(end_stop):
 # ==================== Helper Method =================================
 
 def get_weather_forcast():
-    forecast_time = datetime.datetime(2017, 8, 2, 16, 59).timestamp()
+    today = datetime.date.today()
+    forecast_time = datetime.datetime(today.year, today.month, today.day, 16, 59).timestamp()
     r = requests.get('http://api.openweathermap.org/data/2.5/forecast?q=Dublin&APPID=1160274ac21e49d1ef2e0e5407489e91')
     b_time = 1
     for dt in range (0, r.json()['cnt']):
