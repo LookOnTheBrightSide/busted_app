@@ -112,6 +112,7 @@ $.getJSON(`/get_journey/`, function(data) {
   google.charts.load('current', {'packages':['corechart']});
   google.charts.setOnLoadCallback(drawChart);
 
+
   function drawChart() {
     
     $.getJSON(`/get_journey/`, function(data) {
@@ -162,6 +163,11 @@ $.getJSON(`/get_journey/`, function(data) {
     })
   };
 
+  function myFunction() {
+      var insurance = document.getElementById("myNumber").value;
+      document.getElementById("demo").innerHTML = insurance;
+  }
+
   // send the recorded route.
   $('#send_route').click(function () {
     var route_val = $('#route').val();
@@ -174,7 +180,8 @@ $.getJSON(`/get_journey/`, function(data) {
   // send the tax info.
   $('#send_tax').click(function () {
     var tax_val = $('#tax').val();
-    $.getJSON(`/add_car_tax/${tax_val}`, function(data) {
+    var insurance = $('#insurance').val();
+    $.getJSON(`/add_car_tax/${tax_val}/${insurance}`, function(data) {
       $('#result').html(data);
     });
   });
