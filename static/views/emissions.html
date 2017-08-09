@@ -54,7 +54,15 @@
 			  <option value="f">F - 191 – 225g/km CO2 €1,200</option>
 			  <option value="g">G - 225g/km CO2 €120 or higher €2,350</option>
 			</select>
-                <button class="button button-default" id="send_tax">Select Your Cars Tax Bracket</button>
+            
+            <h4>Please enter the cost of your annual insurance</h4>
+
+            <input type="number" id="insurance" value="2">
+            <p id="demo"></p>
+
+           
+    
+            <button class="button button-default" id="send_tax">Select Your Cars Tax Bracket</button>
             </div>
             <div id="result"></div>
 
@@ -64,6 +72,8 @@
                 <h3 id="inline_header" class="counter">0</h3><span id="saved_info"> grams of CO2 saved so far!</span>
             </div>
             <div id="curve_chart"></div>
+
+
         </div>
     </div>
     <script src="/static/js/emissions.js"></script>
