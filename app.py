@@ -247,21 +247,32 @@ def get_stops_from_origin(start_stop, end_stop, travel_time_selected, travel_dat
     year = int(date[0].lstrip("0"))
     month = int(date[1].lstrip("0"))
     day = int(date[2].lstrip("0"))
+    print ("ok this is the time before, before", time)
     time = (time.split(':'))
+    print ("ok this is the time before", time)
     hour = (time[0])
+    print ("ok this is the hour after", hour)
     minutes = (time[1])
-    if minutes and hour == "00":
+    print ("ok this is the minutes after", minutes)
+    print(type(hour),type(minutes))
+    if minutes and hour == "00" or minutes and hour == "0":
         minutes, hour = 0, 0
-    elif minutes == "00":
+    elif minutes == "00" or minutes == "0":
         minutes = 0
         hour = int(time[0].lstrip("0"))
-    elif hour == "00":
+        print("in the elif", hour,"minutes",minutes)
+        print(type(hour),type(minutes))
+
+    elif hour == "00" or hour == "0":
         hour = 0
         minutes = int(time[1].lstrip("0"))
 
     else:
         hour = int(time[0].lstrip("0"))
         minutes = int(time[1].lstrip("0"))
+
+    print("After the elif", hour,"minutes",minutes)
+    print(type(hour),type(minutes))
     forecast_time = datetime.datetime(year, month, day, hour, minutes).timestamp()
 
     entity = db.routes.find({"$and": [{"route_stops.stop_id": str(start_stop)},
@@ -507,29 +518,53 @@ def add_journey(session):
 def band_to_c02(band):
     if band == 'a0':
         c02 = 0
+        tax_amount = 1230
     elif band == 'a1':
         c02 = 80
+        tax_amount = 170
     elif band == 'a2':
         c02 = 100
+        tax_amount = 180
     elif band == 'a3':
         c02 = 110
+        tax_amount = 190
     elif band == 'a4':
         c02 = 120
+        tax_amount = 200
     elif band == 'b1':
         c02 = 130
+        tax_amount = 270
     elif band == 'b2':
         c02 = 140
+        tax_amount = 280
     elif band == 'c':
         c02 = 155
+        tax_amount = 390
     elif band == 'd':
         c02 = 170
+        tax_amount = 570
     elif band == 'e':
         c02 = 190
+        tax_amount = 750
     elif band == 'f':
         c02 = 225
+        tax_amount = 1200
     else:
         c02 = 250
-    return c02
+        tax_amount = 2350
+    return c02, tax_amount
+
+
+def savings_from_bus():
+    co2, tax = band_to_c02(band)
+    l_100_km = co2 * 0.043103448275862
+    l_1_km = l_100_km/100
+    distence = 8
+    j_distence = distence * l_1_km
+    j_price = j_distence * p
+    yr_car = ((tax + 600) / 261)
+    t_cost = j_price/100 + yr_car
+    print("the cost of your journey is", t_cost )
 
 # =============== Run the App ================================================
 
