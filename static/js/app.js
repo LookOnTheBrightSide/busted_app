@@ -207,10 +207,15 @@ $(document).ready(function() {
             var today = new Date();
             var travel_date_selected = `${today.getFullYear()}-${today.getDate()}-${today.getMonth()}`;
             var travel_time_selected = `${today.getHours()}:${today.getMinutes()}`;
+            console.log(travel_time_selected)
             if($("#travel_date").val() && $("#travel_time").val()){
                 var travel_date_selected = $("#travel_date").val()
                 var travel_time_selected = $("#travel_time").val()
+                console.log(travel_time_selected)
+
             }
+            console.log(travel_time_selected)
+
             
             $.getJSON(`/apiv1/route/start/${start_stop_id}/end/${end_stop_id}/travel_time/${travel_time_selected}/travel_date/${travel_date_selected}`, function(data) {                    $('#bus_possibility').html('')
 
