@@ -175,23 +175,25 @@ def get_weather_forcast(forecast_time):
     b_time = r.json()['list'][b]['dt']
 
     for dt in range (0, r.json()['cnt']-1):
+ 
         if r.json()['list'][dt]['dt'] <= forecast and r.json()['list'][dt+1]['dt'] >= forecast:
             b_time = r.json()['list'][dt+1]['dt']
             a_time = r.json()['list'][dt]['dt']
             a = dt
             b = dt+1
+
     if (forecast - a_time) < (forecast - b_time):
         final_dt = a
     else:
         final_dt = b
+
     future_temp = r.json()['list'][final_dt]['main']['temp']-273.15
     future_wind = r.json()['list'][final_dt]['wind']['speed']
+
     return(future_temp,future_wind)
 
-
 def predictor(start_stop_index, end_stop_index, day_of_week, hour_of_day, prediction_model,temperature,wind):
-    val_start = prediction_model.predict(
-        [[int(start_stop_index), day_of_week, int(hour_of_day), temperature,wind]])
+    val_start = prediction_model.predict([[int(start_stop_index), day_of_week, int(hour_of_day), temperature,wind]])
     val_end = prediction_model.predict(
         [[int(end_stop_index), day_of_week, int(hour_of_day), temperature, wind]])
     return (val_end - val_start) / 60
@@ -240,7 +242,8 @@ def find_stop_id(gps_coordinates):
 @route('/apiv1/route/start/:start_stop/end/:end_stop/travel_time/:travel_time_selected/travel_date/:travel_date_selected', method='GET')
 def get_stops_from_origin(start_stop, end_stop, travel_time_selected, travel_date_selected):
     # x.strip() for x in travel_time.split(',')
-    # year, month, day = (int(x) for x in dt.split('-'))    
+    # year, month, day = (int(x) for x in dt.split('-'))   
+
     time = travel_time_selected
     date = travel_date_selected
     date = (date.split('-'))
@@ -250,6 +253,7 @@ def get_stops_from_origin(start_stop, end_stop, travel_time_selected, travel_dat
     time = (time.split(':'))
     hour = (time[0])
     minutes = (time[1])
+
     if minutes and hour == "00":
         minutes, hour = 0, 0
     elif minutes == "00":
@@ -258,12 +262,11 @@ def get_stops_from_origin(start_stop, end_stop, travel_time_selected, travel_dat
     elif hour == "00":
         hour = 0
         minutes = int(time[1].lstrip("0"))
-
     else:
         hour = int(time[0].lstrip("0"))
         minutes = int(time[1].lstrip("0"))
     forecast_time = datetime.datetime(year, month, day, hour, minutes).timestamp()
-
+    
     entity = db.routes.find({"$and": [{"route_stops.stop_id": str(start_stop)},
                                       {"route_stops.stop_id": str(end_stop)}]})
     start_stop_gps = db.stops.find_one({"stop_id": str(start_stop)})
