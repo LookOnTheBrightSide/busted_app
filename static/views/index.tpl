@@ -53,13 +53,13 @@ end
 				<div id="end_results" class="results_list"></div>
 			</div>
 			<div id="advanced">
-				<div class="date input_inline">
+<!-- 				<div class="date input_inline">
 					<label for="date">Date of Travel</label>
 					<input class="search" id="travel_date" name="date_of_travel" type="date">
-				</div>
+				</div> -->
 				<div class="time input_inline">
-					<label for="time">Departure Time</label>
-					<input class="search" id="travel_time" name="time_of_travel" type="time" required>
+					<label for="time_of_travel">Arrival Time</label>
+					<input class="search" type="datetime-local" id="arrival_time" name="time_of_travel" required>
 				</div>
 			</div>
 
