@@ -1,4 +1,8 @@
 $(document).ready(function() {
+    // =============== Unix Time Getter ===================
+    Date.prototype.getUnixTime = function() { return this.getTime()/1000|0 };
+    if(!Date.now) Date.now = function() { return new Date(); }
+    Date.time = function() { return Date.now().getUnixTime(); }
     // ====================================================
     // ===========Pull live data from dublin bus api=======
     // ====================================================
@@ -180,12 +184,12 @@ $(document).ready(function() {
     // set date picker limits
     // ======================
 
-    var minDate = new Date();
-    var maxDate = new Date(minDate);
-    maxDate.setDate(maxDate.getDate() + 5);
+    // var minDate = new Date();
+    // var maxDate = new Date(minDate);
+    // maxDate.setDate(maxDate.getDate() + 5);
 
-    $('#travel_date').prop('min', minDate.toISOString().substring(0, 10));
-    $('#travel_date').prop('max', maxDate.toISOString().substring(0, 10));
+    // $('#travel_date').prop('min', minDate.toISOString().substring(0, 10));
+    // $('#travel_date').prop('max', maxDate.toISOString().substring(0, 10));
     // ===========================
 
     // show advanced options
@@ -201,19 +205,13 @@ $(document).ready(function() {
         var end_stop_id = destination[0]
 
         if (start_stop_id && end_stop_id) {
-            var today = new Date();
-            var travel_date_selected = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-            var travel_time_selected = `${today.getHours()}:${today.getMinutes()}`;
-
-            if($("#travel_date").val() && $("#travel_time").val()){
-                var travel_date_selected = $("#travel_date").val()
-                var travel_time_selected = $("#travel_time").val()
-            }
-            console.log(travel_date_selected);
-            console.log(travel_time_selected);
-            
-            $.getJSON(`/apiv1/route/start/${start_stop_id}/end/${end_stop_id}/travel_time/${travel_time_selected}/travel_date/${travel_date_selected}`, function(data) {                    $('#bus_possibility').html('')
-
+            var input_selected = new Date().getUnixTime();
+            if($("#arrival_time").val()){
+                var user_date = $("#arrival_time").val();
+                input_selected = new Date(user_date).getUnixTime();
+            }       
+            $.getJSON(`/apiv1/route/start/${start_stop_id}/end/${end_stop_id}/input_time/${input_selected}`, function(data) {
+                $('#bus_possibility').html('')
                 // clear existing content
                 if ($('#bus_to_destination')) {
                     $('#bus_to_destination').html('')
