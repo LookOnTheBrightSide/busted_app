@@ -228,7 +228,6 @@ $(document).ready(function() {
                 if (data) {
                     $('#bus_possibility').append(`<h4>Your bus options</h4>`);
 
-
                     // ===================
                     var directionsDisplay = new google.maps.DirectionsRenderer({
                         polylineOptions: {
