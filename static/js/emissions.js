@@ -39,6 +39,47 @@ function band_to_c02(band) { // Declare a function
   return c02
 };
 
+function band_to_tax(band) { // Declare a function
+  switch(band) {
+    case 'a0':
+        tax_amount = 1230
+        break;
+    case 'a1':
+        tax_amount = 170
+        break;
+    case 'a2':
+        tax_amount = 180
+        break;    
+    case 'a3':
+        tax_amount = 190
+        break;
+    case 'a4':
+        tax_amount = 200
+        break;
+    case 'b1':
+        tax_amount = 270
+        break;
+    case 'b2':
+        tax_amount = 280
+        break;
+    case 'c':
+        tax_amount = 390
+        break;
+    case 'd':
+        tax_amount = 570
+        break;
+    case 'e':
+        tax_amount = 750
+        break;
+    case 'f':
+        tax_amount = 1200
+        break;        
+    default:
+        tax_amount = 2350
+  }
+  return tax_amount
+};
+
 $(document).ready(function () {
 
   var login_name = document.getElementById('login_name');
@@ -79,8 +120,9 @@ $.getJSON(`/get_journey/`, function(data) {
 
   if(data.journey.hasOwnProperty('journey')){
     for(i = 0; i < data.journey.journey.length; i++){
-      bus_emissions += Number(data.journey.journey[i][2]) * 77
-      car_emissions += Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])
+      distance = Math.min((data.journey.journey[i][2]), (data.journey.journey[i][1]));
+      bus_emissions += Number(distance) * 77
+      car_emissions += Number(distance) * band_to_c02(data.journey.journey[i][0])
     }
       $('.counter').each(function() {
       var $this = $(this),
@@ -119,14 +161,21 @@ $.getJSON(`/get_journey/`, function(data) {
     table = []
     row = []
     if(data.journey.hasOwnProperty('journey')){
-      // console.log("here")
+      fuel = data.fuel_price
+      bus_cost = 2.50
+      tax_cost = band_to_tax(data.journey.car_tax)
+      co2 = band_to_c02(data.journey.car_tax)
+      l_1_km = co2 * 0.043103448275862/100
+      yr_car = ((tax_cost + parseInt(data.journey.insurance)) / 261)
       for(i = 0; i < data.journey.journey.length; i++){
+        distance = Math.min((data.journey.journey[i][2]), (data.journey.journey[i][1]));
+        cost_for_trip = (((distance * l_1_km) * fuel)/100) + yr_car
         row = []
         row.push(i+1)
-        row.push(Number(data.journey.journey[i][2]) * 77);
-        row.push("<div>Bus CO2 Emissions: " + (Number(data.journey.journey[i][2]) * 77).toString() + " grams.</div>")
-        row.push(Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0]));
-        row.push("<div>Car CO2 Emissions: " + (Number(data.journey.journey[i][2]) * band_to_c02(data.journey.journey[i][0])) + " grams.</div><div>Car tax band: " + data.journey.journey[i][0] + "</div>")
+        row.push(Number(distance) * 77);
+        row.push("<div>Bus CO2 Emissions are " + (Number(distance * 77).toString()) + " grams.</div> The money saved by getting the bus instead of driving is €"+ (+((cost_for_trip - bus_cost).toFixed(2))) +"</div>")
+        row.push(Number(distance) * band_to_c02(data.journey.journey[i][0]));
+        row.push("<div>Car CO2 Emissions are " + (Number(distance) * band_to_c02(data.journey.journey[i][0])) + " grams </div> <div>Car tax band: " + data.journey.journey[i][0] + "</div> <div>The cost of petrol for this trip is €" + (+((((distance * l_1_km) * fuel)/100).toFixed(2))) +  "</div>")
         table.push(row);
       }
 
