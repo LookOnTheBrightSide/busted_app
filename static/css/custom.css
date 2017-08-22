@@ -42,7 +42,7 @@ html {
     cursor: pointer;
 }
 
-#add_emissions{
+#add_subscribe{
     cursor: pointer;
 }
 
@@ -512,6 +512,23 @@ input[type="search"] {
 #login_pic,
 .names {
     display: inline-block;
+}
+#routing span{
+    color: black;
+    font-family: 'Roboto';
+}
+
+#routing{
+    padding: 1rem;
+    border: 1px solid black;
+}
+
+#send_tax{
+    cursor: pointer;
+}
+
+#send_tax:hover{
+    cursor: pointer;
 }
 
 

@@ -9,12 +9,12 @@
     <meta name="robots" content="follow" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/reset.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger-theme-flat.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <link rel="stylesheet" href="/static/css/reset.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger-theme-flat.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/custom.css">
-
 </head>
 
 <body>
@@ -40,8 +40,8 @@
             <!-- Form  -->
 
             <div>
-            <h4>Add the details of your car.
-            This helps us track your emissions more closely.</h4>
+            <h5>Add the details of your car.
+            This helps us track your emissions more closely.</h5>
 	          <p>Select your car's tax bracket:</p>
 	          <select id="tax">
 	          <option selected disabled>Choose one</option>
@@ -58,15 +58,13 @@
 			  <option value="f">F - 191 – 225g/km CO2 €1,200</option>
 			  <option value="g">G - 225g/km CO2 €120 or higher €2,350</option>
 			</select>
-            
-            <h4>Please enter the cost of your annual insurance</h4>
 
             <label for="insuarance">Please enter the cost of your annual insurance</label>
-            <input name="insuarance" type="number" id="insurance" value="2">
+            <input name="insuarance" type="number" id="insurance" />
             <label for="phone">Mobile Number</label>
             <input name="phone" id="phone_number" type="tel"/>
     
-            <button class="button button-default" id="send_tax">Select Your Cars Tax Bracket</button>
+            <button class="button button-default" id="send_tax">Send</button>
             </div>
             <div id="result"></div>
 
@@ -80,7 +78,10 @@
 
         </div>
     </div>
-    <script src="/static/js/emissions.js"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/js/messenger.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/js/messenger-theme-flat.min.js"></script>
+        <script src="/static/js/emissions.js"></script>
 </body>
 
 </html>
