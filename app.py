@@ -30,6 +30,7 @@ import time
 import ast
 import datetime
 from itertools import product
+from bs4 import BeautifulSoup
 
 from twilio.rest import Client
 from crontab import CronTab
@@ -535,12 +536,29 @@ def add_route_data(session, route, distance):
     temp = [["added"]]
     return dumps(temp)
 
+def make_soup(url):
+    thepage = urllib.request.urlopen(url)
+    soupdata = BeautifulSoup(thepage, "html.parser")
+    return soupdata
+
+
+def get_fuel():
+    soup = make_soup("http://www.theaa.ie/aa/motoring-advice/petrol-prices.aspx")
+    x = soup.find('table',{"class":"parkingTable dynTable"})
+    p = x.findAll('td')[1].text
+    p = float(p.replace("c", ""))
+    return p
+result = {}
+result['fuel_price'] = get_fuel()
+
+
+
 @bottle.route('/get_journey/', method='GET')
 @validate_user
 def add_journey(session):
 
     user_info = ast.literal_eval(session['user_info'])
-    result = {}
+    # result = {}
     band = db.user_data.find_one({'_id': user_info['id']})['car_tax']
     result['journey'] = db.user_data.find_one({'_id': user_info['id']})
     return dumps(result)
