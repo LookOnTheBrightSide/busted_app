@@ -76,8 +76,12 @@ end
             % if defined('user_name'):
             	<div id="add_emissions"></div>
             	<div id="add_emission_result"></div>
+            	<div id="add_subscribe"></div>
+            	<div id="add_subscribe_freq"></div>
             % else:
             	<div id="add_emissions" style="visibility: hidden"></div>
+            	<div id="add_subscribe" style="visibility: hidden"></div>
+            	<div id="add_subscribe_freq" style="visibility: hidden"></div>
 			% end
 
 			<div id="bus_possibility"></div>

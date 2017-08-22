@@ -150,7 +150,6 @@ $.getJSON(`/get_journey/`, function(data) {
       'height': 400
     };
 
-                     
 
     var chart = new google.visualization.AreaChart(document.getElementById('curve_chart'));
 
@@ -162,6 +161,7 @@ $.getJSON(`/get_journey/`, function(data) {
 
     })
   };
+
 
   function myFunction() {
       var insurance = document.getElementById("myNumber").value;
@@ -181,8 +181,13 @@ $.getJSON(`/get_journey/`, function(data) {
   $('#send_tax').click(function () {
     var tax_val = $('#tax').val();
     var insurance = $('#insurance').val();
-    $.getJSON(`/add_car_tax/${tax_val}/${insurance}`, function(data) {
+    var phone = $('#phone_number').val();
+    $.getJSON(`/add_car_tax/${tax_val}/${insurance}/${phone}`, function(data) {
       $('#result').html(data);
     });
   });
+
+
+
+
 });

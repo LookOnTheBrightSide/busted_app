@@ -31,6 +31,11 @@ import ast
 import datetime
 from itertools import product
 
+from twilio.rest import Client
+from crontab import CronTab
+from twilio.twiml.messaging_response import MessagingResponse
+
+
 # =============================================================
 # ================== Install Sessions Plugin ==================
 # =============================================================
@@ -157,6 +162,9 @@ def get_stops_from_destination(end_stop):
     no_repeats = set(buses)
     return dumps(no_repeats)
 
+
+
+
 # ====================================================================
 # checks which buses can be taken
 # checks if both buses are on the same route and
@@ -244,14 +252,14 @@ def get_closest_stop(route, departure_coordinates, arrival_coordinates):
     departure_near_stops = list(db.stops.find({'location': {'$near': {'$geometry': {'type': 'Point', 'coordinates': departure_coordinates}}}}).limit(3))
     arrival_near_stops = list(db.stops.find({'location': {'$near': {'$geometry': {'type': 'Point', 'coordinates': arrival_coordinates}}}}).limit(3))
     # print(near_stops)
-    results = {}
+    results = []
     for dept_stop in departure_near_stops:
         for arr_stop in arrival_near_stops:
             entity = db.routes.find({"$and": [{"route_stops.stop_id": dept_stop['stop_id']},{"route_stops.stop_id": arr_stop['stop_id']}]})
             if entity.count():
                 for i in entity:
                     if i['route'] == route:
-                        results[i['route']] = [dept_stop['stop_id'], arr_stop['stop_id']]
+                        results = [dept_stop['stop_id'], arr_stop['stop_id']]
                     # this line gets any result not just specified route.
                     # results[i['route_pattern_id']] = [dept_stop['stop_id'], arr_stop['stop_id']]
     return results
@@ -292,7 +300,6 @@ def get_stops_from_origin(start_stop, end_stop, input_time):
         return dumps(travel_details)
 
     else:
-
         # if input is more than an hour from current switch to arrival time.
         if (input_time - current_time) < 3600 :
             dept_or_arriv = "departure_time"
@@ -507,13 +514,13 @@ def content(session):
     user_info = ast.literal_eval(session['user_info'])
     return dumps(db.user_data.find({'_id': user_info['id']})[0])
 
-@bottle.route('/add_car_tax/:car_tax/:insurance', method='GET')
+@bottle.route('/add_car_tax/:car_tax/:insurance/:phone', method='GET')
 @validate_user
-def set_car_tax(session, car_tax,insurance):
+def set_car_tax(session, car_tax, insurance, phone):
 
     user_info = ast.literal_eval(session['user_info'])
     db.user_data.find_one_and_update({'_id': user_info['id']},
-        {'$set': {'car_tax': car_tax,'insurance': insurance}}, upsert=True)
+        {'$set': {'car_tax': car_tax, 'insurance': insurance, 'mobile_number': phone}}, upsert=True)
     return car_tax
 
 @bottle.route('/add_route_data/:route/:distance', method='GET')
@@ -537,6 +544,47 @@ def add_journey(session):
     band = db.user_data.find_one({'_id': user_info['id']})['car_tax']
     result['journey'] = db.user_data.find_one({'_id': user_info['id']})
     return dumps(result)
+
+@route('/apiv1/create_subscribe/:start_stop/:end_stop/:freq/:time', method='GET')
+@validate_user
+def get_stops_from_origin(session, start_stop, end_stop, freq, time):
+
+    user_info = ast.literal_eval(session['user_info'])
+    find_user = db.user_data.find_one({'_id': user_info['id']})
+    user = list(find_user)
+
+    # working with find one
+    # print(find_user['mobile_number'])
+
+    if 'mobile_number' not in user:
+        return dumps({"status": "No Phone Number"})
+    else:
+
+        notification = [start_stop, end_stop, freq, time]
+        db.user_data.find_one_and_update({'_id': user_info['id']},{'$push': {'notification': notification}}, upsert=True)
+
+        # cron = CronTab(user=True)
+        # command = "python text_service.py {} {} {}".format(find_user['mobile_number'], start_stop, end_stop)
+
+        # job = cron.new(command="python3 /Users/hinfeyg2/googledrive/masters/semester_3/busted_app/text_service.py")
+        # job.minute.on(1)
+        # cron.write()
+
+        send_sms(find_user['mobile_number'], start_stop, end_stop)
+
+        return dumps({"status": "success"})
+
+def send_sms(number, start_stop, end_stop):
+
+    client = Client(ACCOUNT_SID, AUTH_TOKEN)
+
+    return client.messages.create(
+        to=number,
+        from_=ACCUBUS_TWILIO_NUM,
+        body="\nTo unsubscribe - send 'STOP' to \n{}, your departure stop is {} and your arrival stop is {}".format(ACCUBUS_TWILIO_NUM, start_stop, end_stop))
+
+
+# send_sms("test", "test", "test")
 
 # =============== Run the App ================================================
 
