@@ -341,7 +341,7 @@ $(document).ready(function() {
                                 } else if (index == route_stops[1][0]) {
                                     total_time += Math.ceil(val[0]);
                                 }
-                                $('.acc_time:last').html('').html(`<span>Accubus prediction is ${total_time} minutes</span>`);
+                                $('.acc_time:last').html('').html(`<span>Accubus prediction is <strong>${total_time}</strong> minutes</span>`);
                             });
 
                         })
@@ -355,9 +355,8 @@ $(document).ready(function() {
 
                     var polyline = new google.maps.Polyline({
                         path: path,
-                        strokeColor: '#000000',
-                        strokeOpacity: 0.8,
-                        strokeWeight: 2,
+                        strokeColor: "rebeccapurple",
+                        strokeWeight: 3,
                         fillColor: '#FF0000',
                         fillOpacity: 0.35,
                         map: map
