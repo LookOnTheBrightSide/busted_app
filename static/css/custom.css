@@ -42,6 +42,10 @@ html {
     cursor: pointer;
 }
 
+#add_emissions{
+    cursor: pointer;
+}
+
 #right {
     min-width: 26%;
 }

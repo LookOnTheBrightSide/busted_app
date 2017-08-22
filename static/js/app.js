@@ -313,6 +313,14 @@ $(document).ready(function() {
                         // live api data
                         pull_live_data(start_stop_id);
                         $('#add_emissions').html('').html(`<div>Add Journey To Emmissions</div>`);
+                        $('#add_subscribe').html('').html(`<div>Create Text Subscription</div>`);
+                        $('#add_subscribe_freq').html('').html(`<div id="add_subscribe_time">
+                            <form action="">
+                              <input type="radio" id="daily" checked name="freq" value="daily"> Daily<br>
+                              <input type="radio" id="weekly" name="freq" value="weekly"> Weekly<br>
+                              <input type="radio" id="workdays" name="freq" value="workdays"> Workdays
+                            </form>
+                    </div>`);
                         $.each(data, function(index, val) {
                             if (index !== "end_stop_coords") {
                                 if (index !== "start_stop_coords") {
