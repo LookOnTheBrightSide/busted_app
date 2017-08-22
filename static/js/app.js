@@ -49,6 +49,57 @@ $(document).ready(function() {
         });
     });
 
+    $('div.add_subscribe:empty').hide();
+    document.getElementById("add_subscribe").addEventListener("click", function(){
+        var start_position = $("#start_position").val();
+        var end_position = $("#end_position").val();
+
+        start_stop = start_position.split(" ")[0];
+        end_stop = end_position.split(" ")[0];
+
+        if (document.getElementById('daily').checked) {
+          var freq = document.getElementById('daily').value;
+        }
+        if (document.getElementById('weekly').checked) {
+          var freq = document.getElementById('weekly').value;
+        }
+        if (document.getElementById('workdays').checked) {
+          var freq = document.getElementById('workdays').value;
+        }
+
+        var input_selected = new Date().getUnixTime();
+        if($("#arrival_time").val()){
+            var user_date = $("#arrival_time").val();
+            input_selected = new Date(user_date).getUnixTime();
+        }
+        console.log(input_selected)
+
+// /apiv1/create_subscribe/:number/:start_stop/:end_stop/:freq
+    $.getJSON(`/apiv1/create_subscribe/${start_stop}/${end_stop}/${freq}/${input_selected}`, {}, function(data) {
+
+        // console.log(data);
+        // console.log(data.status)
+        if (data.status == 'No Phone Number'){
+
+        Messenger().post({
+            message: 'You need to enter your phone number of the emissions page!!',
+            type: 'failure',
+            showCloseButton: true
+        });
+
+        } else {
+
+        Messenger().post({
+            message: 'Your subscribed!!',
+            type: 'success',
+            showCloseButton: true
+        });
+
+        }
+        // $('#add_emission_result').append("<div>Journey Added!</div>");
+    });
+    });
+
 
 
     // =====================================================
@@ -247,6 +298,7 @@ $(document).ready(function() {
 
                     }, function(response, status) {
                         if (status == 'OK') {
+                            
                             var distance = (response['routes'][0]['legs'][0]['distance']['value']/1000);
                             $('#distance').html(`<span>Total distance: <strong id='emission_distance'>${distance}</strong></span>`)
                             directionsDisplay.setDirections(response);
@@ -263,6 +315,15 @@ $(document).ready(function() {
                     // live api data
                     pull_live_data(start_stop_id);
                     $('#add_emissions').html('').html(`<div>Add Journey To Emmissions</div>`);
+                    $('#add_subscribe').html('').html(`<div>Create Text Subscription</div>`);
+                    $('#add_subscribe_freq').html('').html(`<div id="add_subscribe_time">
+                            <form action="">
+                              <input type="radio" id="daily" checked name="freq" value="daily"> Daily<br>
+                              <input type="radio" id="weekly" name="freq" value="weekly"> Weekly<br>
+                              <input type="radio" id="workdays" name="freq" value="workdays"> Workdays
+                            </form>
+                    </div>`);
+
                     $.each(data, function(index, val) {
                         if (index !== "end_stop_coords") {
                             if (index !== "start_stop_coords") {
