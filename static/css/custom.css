@@ -3,7 +3,7 @@ html {
 }
 
 * {
-    font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Open Sans';
+    font-family: -apple-system, BlinkMacSystemFont, 'Avenir', 'Roboto', 'Helvetica Neue', 'Helvetica', 'Open Sans';
     box-sizing: border-box;
 }
 
@@ -39,6 +39,10 @@ html {
 }
 
 #add_emissions{
+    cursor: pointer;
+}
+
+#add_subscribe{
     cursor: pointer;
 }
 
@@ -408,7 +412,7 @@ button:focus {
 button:active {
     transform: scale(.99)
 }
-
+input[type=datetime-local],
 input[type=email],
 input[type=file],
 input[type=number],
@@ -446,12 +450,13 @@ input[type=file],
 input[type=number],
 input[type=password]:focus,
 input[type=search]:focus,
+input[type=datetime-local]:focus,
 input[type=tel],
 input[type=text]:focus,
 select:focus textarea:focus,
 textarea[type=text]:focus {
     outline: 0;
-    border: 1px solid #104cfb
+    border: 1px solid rebeccapurple;
 }
 
 input[type=email],
@@ -461,6 +466,7 @@ input[type=password],
 input[type=search],
 input[type=tel],
 input[type=text],
+input[type=datetime-local],
 select {
     padding: 1.1rem
 }
@@ -506,4 +512,58 @@ input[type="search"] {
 #login_pic,
 .names {
     display: inline-block;
+}
+#routing span{
+    color: black;
+    font-family: 'Roboto';
+}
+
+#routing{
+    padding: 1rem;
+    border: 1px solid black;
+}
+
+#send_tax{
+    cursor: pointer;
+}
+
+#send_tax:hover{
+    cursor: pointer;
+}
+
+
+@media only screen and (max-width: 700px) {
+    #map,
+    #logged_in,
+    #curve_chart {
+        display: none;
+    }
+    aside{
+        margin-top: 30%;
+    }
+    ul.messenger.messenger-fixed.messenger-on-right{
+        width: 300px;
+    }
+    .messenger-message-inner {
+        font-family: -apple-system, BlinkMacSystemFont, 'Helvetica', 'Roboto', 'Helvetica Neue';
+    }
+    .flex_container{
+        padding: 1rem;
+    }
+    h4{
+        font-size: 1.4rem;
+    }
+    #flexed{
+        font-size: 1.2rem;
+    }
+    .flex_container .left,
+    .flex_container .right{
+        display: block;
+        width: 100%;
+    }
+    button{
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+    }
 }

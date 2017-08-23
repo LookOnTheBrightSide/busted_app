@@ -1,4 +1,10 @@
 $(document).ready(function() {
+
+    var total_time = 0;
+    // =============== Unix Time Getter ===================
+    Date.prototype.getUnixTime = function() { return this.getTime()/1000|0 };
+    if(!Date.now) Date.now = function() { return new Date(); }
+    Date.time = function() { return Date.now().getUnixTime(); }
     // ====================================================
     // ===========Pull live data from dublin bus api=======
     // ====================================================
@@ -32,7 +38,6 @@ $(document).ready(function() {
     $('div.add_emissions:empty').hide();
     document.getElementById("add_emissions").addEventListener("click", function(){
         var distance = $("#emission_distance").text();
-        console.log(distance);
         $.getJSON(`/add_route_data/00161001/${distance}`, {}, function(data) {
 
             Messenger().post({
@@ -43,6 +48,54 @@ $(document).ready(function() {
 
             // $('#add_emission_result').append("<div>Journey Added!</div>");
         });
+    });
+
+    $('div.add_subscribe:empty').hide();
+    document.getElementById("add_subscribe").addEventListener("click", function(){
+        var start_position = $("#start_position").val();
+        var end_position = $("#end_position").val();
+
+        start_stop = start_position.split(" ")[0];
+        end_stop = end_position.split(" ")[0];
+
+        if (document.getElementById('daily').checked) {
+          var freq = document.getElementById('daily').value;
+        }
+        if (document.getElementById('weekly').checked) {
+          var freq = document.getElementById('weekly').value;
+        }
+        if (document.getElementById('workdays').checked) {
+          var freq = document.getElementById('workdays').value;
+        }
+
+        var input_selected = new Date().getUnixTime();
+        if($("#arrival_time").val()){
+            var user_date = $("#arrival_time").val();
+            input_selected = new Date(user_date).getUnixTime();
+        }
+
+
+// /apiv1/create_subscribe/:number/:start_stop/:end_stop/:freq
+    $.getJSON(`/apiv1/create_subscribe/${start_stop}/${end_stop}/${freq}/${input_selected}`, {}, function(data) {
+        if (data.status == 'No Phone Number'){
+
+        Messenger().post({
+            message: 'You need to enter your phone number of the emissions page!!',
+            type: 'failure',
+            showCloseButton: true
+        });
+
+        } else {
+
+        Messenger().post({
+            message: 'Your subscribed!!',
+            type: 'success',
+            showCloseButton: true
+        });
+
+        }
+        // $('#add_emission_result').append("<div>Journey Added!</div>");
+    });
     });
 
 
@@ -180,12 +233,12 @@ $(document).ready(function() {
     // set date picker limits
     // ======================
 
-    var minDate = new Date();
-    var maxDate = new Date(minDate);
-    maxDate.setDate(maxDate.getDate() + 5);
+    // var minDate = new Date();
+    // var maxDate = new Date(minDate);
+    // maxDate.setDate(maxDate.getDate() + 5);
 
-    $('#travel_date').prop('min', minDate.toISOString().substring(0, 10));
-    $('#travel_date').prop('max', maxDate.toISOString().substring(0, 10));
+    // $('#travel_date').prop('min', minDate.toISOString().substring(0, 10));
+    // $('#travel_date').prop('max', maxDate.toISOString().substring(0, 10));
     // ===========================
 
     // show advanced options
@@ -201,20 +254,14 @@ $(document).ready(function() {
         var end_stop_id = destination[0]
 
         if (start_stop_id && end_stop_id) {
-            var today = new Date();
-            var travel_date_selected = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-            var travel_time_selected = `${today.getHours()}:${today.getMinutes()}`;
-
-            if($("#travel_date").val() && $("#travel_time").val()){
-                var travel_date_selected = $("#travel_date").val()
-                var travel_time_selected = $("#travel_time").val()
+            var input_selected = new Date().getUnixTime();
+            if ($("#arrival_time").val()) {
+                var user_date = $("#arrival_time").val();
+                input_selected = new Date(user_date).getUnixTime();
             }
-            console.log(travel_date_selected);
-            console.log(travel_time_selected);
-            
-            $.getJSON(`/apiv1/route/start/${start_stop_id}/end/${end_stop_id}/travel_time/${travel_time_selected}/travel_date/${travel_date_selected}`, function(data) {                    $('#bus_possibility').html('')
-
-                // clear existing content
+            $.getJSON(`/apiv1/route/start/${start_stop_id}/end/${end_stop_id}/input_time/${input_selected}`, function(data) {
+                $('#bus_possibility').html('')
+                    // clear existing content
                 if ($('#bus_to_destination')) {
                     $('#bus_to_destination').html('')
                 }
@@ -224,61 +271,106 @@ $(document).ready(function() {
                 if ($('#available_buses')) {
                     $('#available_buses').html('')
                 }
-                // =======================
-                if (data) {
-                    $('#bus_possibility').append(`<h4>Your bus options</h4>`);
 
+                if (!data.length) {
+                    if (data) {
+                        $('#bus_possibility').append(`<h4>Your bus options</h4>`);
 
-                    // ===================
-                    var directionsDisplay = new google.maps.DirectionsRenderer({
-                        polylineOptions: {
-                            strokeColor: "rebeccapurple",
-                            strokeWeight: 3
-                        }
-                    });
-                    var directionsService = new google.maps.DirectionsService;
-                    directionsService.route({
-                        origin: {
-                            lat: data.start_stop_coords[1],
-                            lng: data.start_stop_coords[0]
-                        },
-                        destination: {
-                            lat: data.end_stop_coords[1],
-                            lng: data.end_stop_coords[0]
-                        },
-                        travelMode: google.maps.TravelMode.TRANSIT
-
-                    }, function(response, status) {
-                        if (status == 'OK') {
-                            var distance = (response['routes'][0]['legs'][0]['distance']['value']/1000);
-                            $('#distance').html(`<span>Total distance: <strong id='emission_distance'>${distance}</strong></span>`)
-                            directionsDisplay.setDirections(response);
-                        } else {
-                            Messenger().post({
-                                message: `Directions request failed due to ${status}`,
-                                type: 'error',
-                                showCloseButton: true
-                            });
-                        }
-                    });
-
-                    directionsDisplay.setMap(map);
-                    // live api data
-                    pull_live_data(start_stop_id);
-                    $('#add_emissions').html('').html(`<div>Add Journey To Emmissions</div>`);
-                    $.each(data, function(index, val) {
-                        if (index !== "end_stop_coords") {
-                            if (index !== "start_stop_coords") {
-                                $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button-small"> Accubus estimate for ${index} bus is ${Math.ceil(val)} minutes</span>`);
-                                // $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button-small"> Accubus estimate for ${index} bus is ${Math.ceil(val)} minutes</span>`);
+                        // ===================
+                        var directionsDisplay = new google.maps.DirectionsRenderer({
+                            polylineOptions: {
+                                strokeColor: "rebeccapurple",
+                                strokeWeight: 3
                             }
-                        }
-                    })
+                        });
+                        var directionsService = new google.maps.DirectionsService;
+                        directionsService.route({
+                            origin: {
+                                lat: data.start_stop_coords[1],
+                                lng: data.start_stop_coords[0]
+                            },
+                            destination: {
+                                lat: data.end_stop_coords[1],
+                                lng: data.end_stop_coords[0]
+                            },
+                            travelMode: google.maps.TravelMode.TRANSIT
+
+                        }, function(response, status) {
+                            if (status == 'OK') {
+                                var distance = (response['routes'][0]['legs'][0]['distance']['value'] / 1000);
+                                $('#distance').html(`<span>Total distance: <strong id='emission_distance'>${distance}</strong></span>`)
+                                directionsDisplay.setDirections(response);
+                            } else {
+                                Messenger().post({
+                                    message: `Directions request failed due to ${status}`,
+                                    type: 'error',
+                                    showCloseButton: true
+                                });
+                            }
+                        });
+
+                        directionsDisplay.setMap(map);
+                        // live api data
+                        pull_live_data(start_stop_id);
+                        $('#add_emissions').html('').html(`<div>Add Journey To Emmissions</div>`);
+                        $('#add_subscribe').html('').html(`<div>Create Text Subscription</div>`);
+                        $('#add_subscribe_freq').html('').html(`<div id="add_subscribe_time">
+                            <form action="">
+                              <input type="radio" id="daily" checked name="freq" value="daily"> Daily<br>
+                              <input type="radio" id="weekly" name="freq" value="weekly"> Weekly<br>
+                              <input type="radio" id="workdays" name="freq" value="workdays"> Workdays
+                            </form>
+                    </div>`);
+                        $.each(data, function(index, val) {
+                            if (index !== "end_stop_coords") {
+                                if (index !== "start_stop_coords") {
+                                    $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button-small"> Accubus estimate for ${index} bus is ${Math.ceil(val)} minutes</span>`);
+                                    // $('#bus_possibility').append(`<span id="chosen_bus" class="bus_to_take button-small"> Accubus estimate for ${index} bus is ${Math.ceil(val)} minutes</span>`);
+                                }
+                            }
+                        })
+                    }
                 } else {
                     if ($('#bus_options')) {
                         $('#bus_options').html('')
                     }
-                    $('#bus_possibility').append(`<h4>No direct buses ...</h4>`)
+                    $('#bus_possibility').append(`<h4>No direct buses ...</h4><div id="routing"></div>`)
+
+                    var route_stops = []
+                    $.each(data[0]['steps'], function(key, val) {
+                        route_stops.push([val.route_number, val.available_journeys[0], val.available_journeys[1]])
+                        $('#routing').append(`<span>${val.route_number} bus from stop ${val.available_journeys[0]} to stop ${val.available_journeys[1]}</span><br/><div class="acc_time">`)
+                    })
+                    $.each(route_stops, function(index, val) {
+                        $.getJSON(`/apiv1/route/start/${val[1]}/end/${val[2]}/input_time/${input_selected}`, function(data) {
+                            $.each(data, function(index, val) {
+                                if (index == route_stops[0][0]) {
+                                    total_time += Math.ceil(val[0]);
+                                } else if (index == route_stops[1][0]) {
+                                    total_time += Math.ceil(val[0]);
+                                }
+                                $('.acc_time:last').html('').html(`<span>Accubus prediction is <strong>${total_time}</strong> minutes</span>`);
+                            });
+
+                        })
+                    })
+                    var bounds = new google.maps.LatLngBounds();
+
+                    var path = google.maps.geometry.encoding.decodePath(data[0].fullPolyline.points);
+                    for (var i = 0; i < path.length; i++) {
+                        bounds.extend(path[i]);
+                    }
+
+                    var polyline = new google.maps.Polyline({
+                        path: path,
+                        strokeColor: "rebeccapurple",
+                        strokeWeight: 3,
+                        fillColor: '#FF0000',
+                        fillOpacity: 0.35,
+                        map: map
+                    });
+                    polyline.setMap(map);
+                    map.fitBounds(bounds);
                 }
             })
         } else if (start_stop_id) {

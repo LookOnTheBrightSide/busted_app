@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <title>Accubus | Dublin Bus Travel Time Predictions</title>
+    <meta name="description" content="UCD MSC Research Practicum Project. Uses an Machine Learning model to predict travel times. Data supplied bu DublinBus spanning two months was used for the project." />
+    <meta name="keywords" content="Dublin Bus, Travel, Prediction, Research" />
+    <meta name="robots" content="follow" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/css/reset.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/messenger/1.5.0/css/messenger-theme-flat.min.css">
@@ -53,13 +57,13 @@ end
 				<div id="end_results" class="results_list"></div>
 			</div>
 			<div id="advanced">
-				<div class="date input_inline">
+<!-- 				<div class="date input_inline">
 					<label for="date">Date of Travel</label>
 					<input class="search" id="travel_date" name="date_of_travel" type="date">
-				</div>
+				</div> -->
 				<div class="time input_inline">
-					<label for="time">Departure Time</label>
-					<input class="search" id="travel_time" name="time_of_travel" type="time" required>
+					<label for="time_of_travel">Arrival Time</label>
+					<input class="search" type="datetime-local" id="arrival_time" name="time_of_travel" required>
 				</div>
 			</div>
 
@@ -72,8 +76,12 @@ end
             % if defined('user_name'):
             	<div id="add_emissions"></div>
             	<div id="add_emission_result"></div>
+            	<div id="add_subscribe"></div>
+            	<div id="add_subscribe_freq"></div>
             % else:
             	<div id="add_emissions" style="visibility: hidden"></div>
+            	<div id="add_subscribe" style="visibility: hidden"></div>
+            	<div id="add_subscribe_freq" style="visibility: hidden"></div>
 			% end
 
 			<div id="bus_possibility"></div>
