@@ -107,10 +107,10 @@ $(document).ready(function () {
     
     login_name.innerHTML += (obj.name);
     last_login.innerHTML += ("Last Login: " + datevalues[2] + "-" + datevalues[1] + "-" + datevalues[0]);
-    login_pic.innerHTML += ("<img src='http://graph.facebook.com/" + obj._id + "/picture?type=square'>");
+    login_pic.innerHTML += ("<img src='https://graph.facebook.com/" + obj._id + "/picture?type=square'>");
   }else{
     login_name.innerHTML += (obj.name);
-    login_pic.innerHTML += ("<img src='http://graph.facebook.com/" + obj._id + "/picture?type=square'>");
+    login_pic.innerHTML += ("<img src='https://graph.facebook.com/" + obj._id + "/picture?type=square'>");
   }
   });
 
@@ -235,8 +235,5 @@ $.getJSON(`/get_journey/`, function(data) {
       $('#result').html(data);
     });
   });
-
-
-
-
 });
+
