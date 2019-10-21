@@ -11,7 +11,7 @@ requests==2.18.1
 requests-oauthlib==0.8.0
 scipy==0.19.1
 sklearn==0.0
-urllib3==1.21.1
+urllib3==1.24.2
 WebOb==1.7.3
 wget==3.2
 pprint==0.1
