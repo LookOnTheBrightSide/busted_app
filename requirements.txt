@@ -1,4 +1,4 @@
-bottle==0.12.13
+bottle==0.12.19
 bottle-session==0.8
 certifi==2017.4.17
 chardet==3.0.4
